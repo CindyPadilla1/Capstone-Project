@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aura Match Demo</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Aura Matching Demo</h1>
+<p>Click button to get matches from backend</p>
+
+<button onclick="getMatches()">Get Matches</button>
+
+<ul id="output"></ul>
+
+<script>
+    function getMatches() {
+        fetch("http://localhost:4000/matches/1")
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById("output");
+                list.innerHTML = "";
+
+                data.forEach(match => {
+                    const item = document.createElement("li");
+                    item.textContent =
+                        `Age ${match.age}, Location ${match.location}, Score ${match.score}`;
+                    list.appendChild(item);
+                });
+            });
+    }
+</script>
+
+</body>
+</html>
