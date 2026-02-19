@@ -1,41 +1,20 @@
-import { NavLink } from "react-router-dom";
-
-function NavLinkBar() {
+function Navbar() {
     return (
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div className="container-fluid">
+        <nav className="navbar navbar-dark navbar-color px-4">
 
+            <span className="navbar-brand mb-0 h1">
+                ☰
+            </span>
 
-                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span className="navbar-toggler-icon"></span>
-                </button>
+            <div className="d-flex gap-3 text-white">
 
-                <div className="collapse navbar-collapse" id="navbarNav">
-                    <ul className="navbar-nav ms-auto">
-                        <li className="nav-item">
-                            <NavLink
-                                className="nav-link"
-                                to="/"
-                                end
-                            >Home</NavLink>
-                        </li>
-                        <li className="nav-item">
-                            <NavLink
-                                className="nav-link"
-                                to="/about"
-                            >About</NavLink>
-                        </li>
-                        <li className="nav-item">
-                            <NavLink
-                                className="nav-link"
-                                to="/contact"
-                            >Contact</NavLink>
-                        </li>
-                    </ul>
-                </div>
+                <i className="bi bi-bell"></i>
+                <i className="bi bi-share"></i>
+                <i className="bi bi-search"></i>
             </div>
+
         </nav>
     );
 }
 
-export default NavLinkBar;
+export default Navbar;

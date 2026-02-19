@@ -1,6 +1,6 @@
 function Login() {
     return (
-        <div className="login-page d-flex justify-content-center align-items-center min-vh-100">
+        <div className="faded-background d-flex justify-content-center align-items-center min-vh-100">
 
             <div className="login-card p-4 text-center">
                 <h1 className="aura-logo">Aura</h1>

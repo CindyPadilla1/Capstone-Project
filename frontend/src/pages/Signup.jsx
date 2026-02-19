@@ -1,6 +1,6 @@
 function Signup() {
     return (
-        <div className="signin-page d-flex flex-column justify-content-center align-items-center min-vh-100">
+        <div className="signin-page faded-background d-flex flex-column justify-content-center align-items-center min-vh-100">
 
             <div className="p-4 text-center">
                 <h1 className="fs-3 text-white">Tell us your vibe.</h1>

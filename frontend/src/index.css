@@ -1,12 +1,11 @@
 .signin-page {
     height: 100%;
-    background: linear-gradient(
-            to bottom,
-            #8b0000,
-            #e6cfcf
-    );
 }
-.login-page {
+.navbar-color {
+    background-color: darkred;
+}
+
+.faded-background {
     background: linear-gradient(
             to bottom,
             #8b0000,
