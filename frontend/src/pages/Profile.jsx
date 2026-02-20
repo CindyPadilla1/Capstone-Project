@@ -1,26 +1,51 @@
 import Navbar from "../components/Navbar";
+import StarRating from "../components/StarRating";
 import { useState } from "react";
+
+import beatrice from '../assets/beatrice.png'
 
 function Profile() {
 
+    const [starRating] = useState(3);
     const [name, setName] = useState("Yoma");
     const [location, setLocation] = useState("IL");
-    const [religion, setReligion] = useState("Atheist");
-    const [political, setPolitical] = useState("Democrat");
-    const [ageRange, setAgeRange] = useState(30);
+    const [gender, setGender] = useState("Male");
+    const [minAge, setMinAge] = useState(18);
+    const [maxAge, setMaxAge] = useState(100);
+
+    const handleSave = () => {
+
+        // BACKEND DISABLED
+        /*
+        fetch("/api/update-profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(user)
+        });
+        */
+
+        // Prototype behavior
+        alert("Profile saved successfully!");
+    };
 
     return (
         <>
             <Navbar />
+
             <div className="container  d-flex justify-content-center align-items-center text-center faded-background min-vh-100 min-vw-100">
 
                 <div className="login-card p-4 text-center mb-4">
                     <div className="bg-white">
                         <img
-                            src="https://tinyurl.com/5846evr2"
-                            className="rounded mb-5 mt-5"
+                            src={beatrice}
+                            className="rounded mb-3 mt-5 img-fluid"
                             alt="profile"
+                            style={{ width: "70%", aspectRatio: "1/1", objectFit: "cover" }}
                         />
+                        <div className="pb-2">
+                            <StarRating  rating={starRating} />
+                        </div>
+
                     </div>
                     <h3 className="mt-3">Profile</h3>
 
@@ -43,33 +68,32 @@ function Profile() {
                     </div>
 
                     <div className="mb-3 text-start">
-                        <label>Match Age Range</label>
+                        <label>Match Age Range: {minAge} - {maxAge}</label>
                         <input
                             type="range"
                             min="18"
-                            max="60"
+                            max="100"
+                            value={minAge}
+                            onChange={(e) => setMinAge(e.target.value)}
                             className="form-range"
-                            value={ageRange}
-                            onChange={(e) => setAgeRange(e.target.value)}
                         />
-                        <p>{ageRange}</p>
-                    </div>
 
-                    <div className="mb-3 text-start">
-                        <label>Religion Preference</label>
                         <input
-                            className="form-control"
-                            value={religion}
-                            onChange={(e) => setReligion(e.target.value)}
+                            type="range"
+                            min="18"
+                            max="100"
+                            value={maxAge}
+                            onChange={(e) => setMaxAge(e.target.value)}
+                            className="form-range"
                         />
                     </div>
 
                     <div className="mb-3 text-start">
-                        <label>Political Preference</label>
+                        <label>Gender Preference</label>
                         <input
                             className="form-control"
-                            value={political}
-                            onChange={(e) => setPolitical(e.target.value)}
+                            value={gender}
+                            onChange={(e) => setGender(e.target.value)}
                         />
                     </div>
 
@@ -80,7 +104,10 @@ function Profile() {
                     </div>
 
                     <div>
-                        <button className="btn btn-outline-danger me-2">
+                        <button
+                            className="btn btn-outline-danger me-2"
+                            onClick={handleSave}
+                        >
                             Save
                         </button>
                     </div>

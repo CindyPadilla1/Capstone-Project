@@ -1,34 +1,86 @@
+import Navbar from "../components/Navbar";
+import Match from "../components/Match";
+import { useEffect, useState } from "react";
+
 function Matching() {
+
+    const [matches, setMatches] = useState([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+
+        //  BACKEND DISABLED FOR SPRINT 1
+        /*
+        fetch("/api/matches")
+          .then(res => res.json())
+          .then(data => setMatches(data));
+        */
+
+        //  MOCK DATA FOR PRESENTATION
+        setMatches([
+            {
+                name: "Beatrice",
+                location: "Chicago",
+                age: 27,
+                gender: "Female",
+                starRating: 4,
+                image: "https://picsum.photos/300"
+            },
+            {
+                name: "Ariana",
+                location: "New York",
+                age: 24,
+                gender: "Female",
+                starRating: 5,
+                image: "https://picsum.photos/301"
+            }
+        ]);
+
+    }, []);
+
+    const handleHeart = () => {
+
+        const likedUser = matches[currentIndex];
+
+        fetch("/api/save-match", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(likedUser)
+        });
+
+        nextMatch();
+    };
+
+    const handleReject = () => {
+        nextMatch();
+    };
+
+    const nextMatch = () => {
+        setCurrentIndex(prev => prev + 1);
+    };
+
+    if (matches.length === 0) {
+        return <p>Loading...</p>;
+    }
+
+    if (currentIndex >= matches.length) {
+        return <p>No more matches</p>;
+    }
+
     return (
-        <div className="container mt-5">
+        <>
+            <Navbar />
 
-            <h2 className="text-center mb-4">Your Matches</h2>
+            <div className="container d-flex justify-content-center align-items-center faded-background min-vh-100;">
 
-            <div className="card mx-auto shadow" style={{ width: "18rem" }}>
-                <img
-                    src="https://via.placeholder.com/300"
-                    className="card-img-top"
-                    alt="profile"
+                <Match
+                    user={matches[currentIndex]}
+                    onHeart={handleHeart}
+                    onReject={handleReject}
                 />
 
-                <div className="card-body text-center">
-                    <h5 className="card-title">Yoma, 28</h5>
-
-                    <p className="card-text">
-                        Loves hiking • Dogs • Movies
-                    </p>
-
-                    <button className="btn btn-success me-2">
-                        Like
-                    </button>
-
-                    <button className="btn btn-secondary">
-                        Pass
-                    </button>
-                </div>
             </div>
-
-        </div>
+        </>
     );
 }
 

@@ -5,7 +5,7 @@ function DatePlanner() {
         <>
             <Navbar />
 
-            <div className="container mt-3 text-center faded-background">
+            <div className="container mt-3 text-center faded-background min-vh-100 min-vw-100">
 
                 <h3>Date Options?</h3>
 
@@ -13,29 +13,27 @@ function DatePlanner() {
                     Check out stores in your area.
                 </p>
 
-                {/* Map Placeholder */}
-                <div
-                    style={{
-                        height: "250px",
-                        background: "#e0b4b4",
-                        border: "3px solid purple",
-                        borderRadius: "10px"
-                    }}
-                    className="mb-4"
+                <div className="map mb-5"
                     >
                     Map goes here
                 </div>
 
-                <div className="text-start">
-                    <div className="card p-2 mb-2">
+                <div>
+                    <p className="text-muted">
+                        Availablity :
+                    </p>
+                </div>
+
+                <div className="text-start ">
+                    <div className="card p-2 mb-4">
                         📍 Restaurant Name
                     </div>
 
-                    <div className="card p-2 mb-2">
+                    <div className="card p-2 mb-4">
                         📍 Movie Theater
                     </div>
 
-                    <div className="card p-2">
+                    <div className="card p-2 mb-2">
                         📍 Coffee Shop
                     </div>
                 </div>
