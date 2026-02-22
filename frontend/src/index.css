@@ -63,14 +63,16 @@
     border: none;
     background: white;
     color: black;
-    border-radius: 60%;
-    width: 8%;
-    height: 3.5%;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
     font-weight: bolder;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
-
-
 
 .sidebar {
     position: fixed;
@@ -94,4 +96,50 @@
     text-decoration: none;
     display: block;
     padding: 10px 0;
+}
+
+.dual-range::-webkit-slider-thumb {
+    pointer-events: all;
+    cursor: pointer;
+    z-index: 2;
+    position: relative;
+}
+
+.dual-range::-moz-range-thumb {
+    pointer-events: all;
+    cursor: pointer;
+    z-index: 2;
+    position: relative;
+}
+
+/* Add these to your existing CSS file */
+
+.section-title {
+    color: darkred;
+    font-weight: 700;
+    border-bottom: 2px solid #c94b5b;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+    margin-top: 8px;
+}
+
+.toggle-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 2px solid #c94b5b;
+    background: white;
+    color: #c94b5b;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+    background: #f2e6e6;
+}
+
+.toggle-btn-active {
+    background: #a8001c;
+    color: white;
+    border-color: #a8001c;
 }

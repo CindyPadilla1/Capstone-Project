@@ -1,4 +1,3 @@
-
 function StarRating({ rating }) {
     return (
         <div className="text-warning">
