@@ -31,7 +31,7 @@ export function UserProvider({ children }) {
 
         personality: "",
         datingGoal: "",
-        lookingFor: "",
+        bio: "",
         astrology: "",
 
         children: "",

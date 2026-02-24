@@ -82,37 +82,6 @@ function Profile() {
                         />
                     </div>
 
-                    <div className="mb-3 text-start">
-                        <label>Match Age Range: {profile.minAge} - {profile.maxAge}</label>
-                        <div style={{ position: "relative", height: "30px" }}>
-                            <input
-                                type="range"
-                                min="18"
-                                max="100"
-                                value={profile.minAge}
-                                onChange={(e) => update("minAge", Math.min(Number(e.target.value), profile.maxAge - 1))}
-                                className="dual-range dual-range-min"
-                            />
-                            <input
-                                type="range"
-                                min="18"
-                                max="100"
-                                value={profile.maxAge}
-                                onChange={(e) => update("maxAge", Math.max(Number(e.target.value), Number(profile.minAge) + 1))}
-                                className="dual-range"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="mb-4 text-start">
-                        <label>Gender Preference</label>
-                        <input
-                            className="form-control"
-                            value={profile.gender}
-                            onChange={(e) => update("gender", e.target.value)}
-                        />
-                    </div>
-
                     <h5 className="section-title">Identity &amp; Background</h5>
 
                     <div className="mb-3 text-start">
@@ -273,13 +242,13 @@ function Profile() {
                     </div>
 
                     <div className="mb-3 text-start">
-                        <label>What are you looking for?</label>
+                        <label>Bio</label>
                         <textarea
                             className="form-control"
                             rows={3}
-                            placeholder="Describe what you're hoping to find..."
-                            value={profile.lookingFor}
-                            onChange={(e) => update("lookingFor", e.target.value)}
+                            placeholder="Tell us more about yourself..."
+                            value={profile.bio}
+                            onChange={(e) => update("bio", e.target.value)}
                         />
                     </div>
 
@@ -337,6 +306,28 @@ function Profile() {
                     </div>
 
                     <h5 className="section-title">Filters</h5>
+
+                    <div className="mb-3 text-start">
+                        <label>Match Age Range: {profile.minAge} - {profile.maxAge}</label>
+                        <div style={{ position: "relative", height: "30px" }}>
+                            <input
+                                type="range"
+                                min="18"
+                                max="100"
+                                value={profile.minAge}
+                                onChange={(e) => update("minAge", Math.min(Number(e.target.value), profile.maxAge - 1))}
+                                className="dual-range dual-range-min"
+                            />
+                            <input
+                                type="range"
+                                min="18"
+                                max="100"
+                                value={profile.maxAge}
+                                onChange={(e) => update("maxAge", Math.max(Number(e.target.value), Number(profile.minAge) + 1))}
+                                className="dual-range"
+                            />
+                        </div>
+                    </div>
 
                     <div className="mb-4 text-start">
                         <label>Political Preference</label>

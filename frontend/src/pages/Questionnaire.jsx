@@ -18,7 +18,7 @@ function ToggleGroup({ options, value, onChange }) {
     );
 }
 
-function Questionaire() {
+function Questionnaire() {
     const navigate = useNavigate();
     const { profile, setProfile } = useUser();
     const update = (field, value) => setProfile((prev) => ({ ...prev, [field]: value }));
@@ -209,13 +209,13 @@ function Questionaire() {
                     </div>
 
                     <div className="mb-3">
-                        <label>What are you looking for?</label>
+                        <label>Bio</label>
                         <textarea
                             className="form-control"
                             rows={3}
-                            placeholder="Describe what you're hoping to find..."
-                            value={profile.lookingFor}
-                            onChange={(e) => update("lookingFor", e.target.value)}
+                            placeholder="Tell us more about yourself..."
+                            value={profile.bio}
+                            onChange={(e) => update("bio", e.target.value)}
                         />
                     </div>
 
@@ -274,6 +274,28 @@ function Questionaire() {
 
                     <h5 className="section-title">Filters</h5>
 
+                    <div className="mb-3 text-start">
+                        <label>Match Age Range: {profile.minAge} - {profile.maxAge}</label>
+                        <div style={{ position: "relative", height: "30px" }}>
+                            <input
+                                type="range"
+                                min="18"
+                                max="100"
+                                value={profile.minAge}
+                                onChange={(e) => update("minAge", Math.min(Number(e.target.value), profile.maxAge - 1))}
+                                className="dual-range dual-range-min"
+                            />
+                            <input
+                                type="range"
+                                min="18"
+                                max="100"
+                                value={profile.maxAge}
+                                onChange={(e) => update("maxAge", Math.max(Number(e.target.value), Number(profile.minAge) + 1))}
+                                className="dual-range"
+                            />
+                        </div>
+                    </div>
+
                     <div className="mb-4">
                         <label>Political Preference</label>
                         <select className="form-select" value={profile.politicalPref} onChange={(e) => update("politicalPref", e.target.value)}>
@@ -299,4 +321,4 @@ function Questionaire() {
     );
 }
 
-export default Questionaire;
+export default Questionnaire;

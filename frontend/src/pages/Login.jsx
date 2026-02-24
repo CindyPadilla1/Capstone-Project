@@ -28,12 +28,11 @@ function Login() {
         //  Backend disabled for sprint
         // fetch("/api/login"...)
 
-        navigate("/profile");
+        navigate("/matching");
     };
 
     return (
         <div className="faded-background d-flex justify-content-center align-items-center min-vh-100">
-
             <div className="login-card p-4 text-center">
                 <h1 className="aura-logo">Aura</h1>
                 <h2 className="mb-4 fs-2">Login</h2>

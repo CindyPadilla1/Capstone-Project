@@ -41,7 +41,7 @@ function Signup() {
         fetch("/api/signup", {...})
         */
 
-        navigate("/questionaire");
+        navigate("/questionnaire");
     };
 
     return (
@@ -109,7 +109,6 @@ function Signup() {
                 <div className="mt-3 small">
                     <a href="/" className="text-dark">Back to Login</a>
                 </div>
-
             </div>
         </div>
     );
