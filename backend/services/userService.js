@@ -1,12 +1,12 @@
 // userService.js
 // Fetches user + preferences from the actual database schema.
 // All fields align with the users, preferences, and preference_genders tables.
+// Joins gender_type for gender_name string and photo for primary profile image.
 
 const pool = require("../config/db");
 
 // ─── GET SINGLE USER WITH PREFERENCES ──────────────────────────────────────
 async function getUserById(userId) {
-    // Pull all matchable fields from users table
     const userResult = await pool.query(
         `SELECT
             u.user_id,
@@ -14,9 +14,11 @@ async function getUserById(userId) {
             u.last_name,
             u.date_of_birth,
             u.gender_identity,
+            gt.gender_name,
             u.height_cm,
             u.location_city,
             u.location_state,
+            u.bio,
             u.religion_id,
             u.ethnicity_id,
             u.education_career_id,
@@ -37,9 +39,12 @@ async function getUserById(userId) {
             u.children,
             u.political,
             u.account_status,
-            ts.internal_score AS trust_score
+            ts.internal_score AS trust_score,
+            ph.photo_url      AS profile_photo_url
         FROM users u
-        LEFT JOIN trust_score ts ON ts.user_id = u.user_id
+        LEFT JOIN gender_type  gt ON gt.gender_type_id = u.gender_identity
+        LEFT JOIN trust_score  ts ON ts.user_id        = u.user_id
+        LEFT JOIN photo        ph ON ph.user_id        = u.user_id AND ph.is_primary = true
         WHERE u.user_id = $1`,
         [userId]
     );
@@ -47,7 +52,7 @@ async function getUserById(userId) {
     if (userResult.rows.length === 0) return null;
     const user = userResult.rows[0];
 
-    // Pull preferences
+    // Pull preferences + preferred_genders array
     const prefResult = await pool.query(
         `SELECT
             p.preference_id,
@@ -95,9 +100,11 @@ async function getCandidates(excludeUserId) {
             u.last_name,
             u.date_of_birth,
             u.gender_identity,
+            gt.gender_name,
             u.height_cm,
             u.location_city,
             u.location_state,
+            u.bio,
             u.religion_id,
             u.ethnicity_id,
             u.education_career_id,
@@ -118,14 +125,16 @@ async function getCandidates(excludeUserId) {
             u.children,
             u.political,
             u.account_status,
-            ts.internal_score AS trust_score
+            ts.internal_score AS trust_score,
+            ph.photo_url      AS profile_photo_url
         FROM users u
-        LEFT JOIN trust_score ts ON ts.user_id = u.user_id
+        LEFT JOIN gender_type  gt ON gt.gender_type_id = u.gender_identity
+        LEFT JOIN trust_score  ts ON ts.user_id        = u.user_id
+        LEFT JOIN photo        ph ON ph.user_id        = u.user_id AND ph.is_primary = true
         WHERE u.user_id != $1
           AND u.account_status = 'active'`,
         [excludeUserId]
     );
-
     return result.rows;
 }
 
