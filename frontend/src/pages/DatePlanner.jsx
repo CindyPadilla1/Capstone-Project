@@ -80,6 +80,7 @@ function DatePlanner() {
 
                     <div className="map mb-4 d-flex align-items-center justify-content-center text-muted">
                         🗺️ Map goes here
+
                     </div>
 
                     <h5 className="section-title">Pick a Spot</h5>

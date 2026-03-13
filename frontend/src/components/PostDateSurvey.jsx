@@ -71,7 +71,7 @@ function PostDateSurvey() {
                                 max="5"
                                 value={comfortScore}
                                 onChange={(e) => setComfortScore(Number(e.target.value))}
-                                className="form-range mt-1"
+                                className="single-range mt-1"
                             />
                         </div>
 

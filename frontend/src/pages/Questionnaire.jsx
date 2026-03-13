@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
+import { useState } from "react";
 
 function ToggleGroup({ options, value, onChange }) {
     return (
@@ -29,27 +30,35 @@ function Questionnaire() {
         return `${ft}'${inch}"`;
     };
 
+    const [error, setError] = useState("");
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!profile.religion || !profile.datingGoal || !profile.personality || !profile.genderPref) {
-            alert("Please fill in all required fields.");
+        if (!profile.religion || !profile.datingGoal || !profile.personality || !profile.gender) {
+            setError("Please fill in all required fields.");
             return;
         }
-        navigate("/matching");
+        setError("");
+        navigate("/preferences");
     };
 
     return (
         <div className="faded-background d-flex flex-column justify-content-center align-items-center min-vh-100 py-5">
 
             <div className="p-4 text-center">
-                <h1 className="fs-3 text-white">Find Your Match.</h1>
-                <h2 className="fs-6 text-white">Tell us what matters to you.</h2>
+                <h1 className="fs-3 text-white">Tell Us About You.</h1>
+                <h2 className="fs-6 text-white">Help us get to know you better.</h2>
             </div>
 
             <div className="login-card p-4 text-start mb-4" style={{ width: "90%", maxWidth: "500px" }}>
                 <form onSubmit={handleSubmit}>
 
                     <h5 className="section-title">Identity &amp; Background</h5>
+
+                    <div className="mb-3">
+                        <label>Gender <span className="text-danger">*</span></label>
+                        <ToggleGroup options={["Male", "Female", "Non-binary"]} value={profile.gender} onChange={(v) => update("gender", v)} />
+                    </div>
 
                     <div className="mb-3">
                         <label>Religion <span className="text-danger">*</span></label>
@@ -65,6 +74,8 @@ function Questionnaire() {
                             <option>Mormon</option>
                             <option>Muslim</option>
                             <option>Spiritual (non-religious)</option>
+                            <option>Other</option>
+                            <option>Prefer not to say</option>
                         </select>
                     </div>
 
@@ -80,11 +91,13 @@ function Questionnaire() {
                             <option>Pacific Islander</option>
                             <option>White / Caucasian</option>
                             <option>Multiracial</option>
+                            <option>Other</option>
+                            <option>Prefer not to say</option>
                         </select>
                     </div>
 
                     <div className="mb-3">
-                        <label>Education / Career</label>
+                        <label>Education</label>
                         <select className="form-select" value={profile.education} onChange={(e) => update("education", e.target.value)}>
                             <option value="">Select...</option>
                             <option>High School</option>
@@ -97,6 +110,18 @@ function Questionnaire() {
                         </select>
                     </div>
 
+                    <div className="mb-3">
+                        <label>Your Height: {inchesToDisplay(profile.height)}</label>
+                        <input
+                            type="range"
+                            min="48"
+                            max="96"
+                            value={profile.height}
+                            onChange={(e) => update("height", Number(e.target.value))}
+                            className="single-range mt-1"
+                        />
+                    </div>
+
                     <div className="mb-4">
                         <label>Family-Oriented?</label>
                         <ToggleGroup options={["Yes", "No"]} value={profile.familyOriented} onChange={(v) => update("familyOriented", v)} />
@@ -105,17 +130,17 @@ function Questionnaire() {
                     <h5 className="section-title">Lifestyle &amp; Habits</h5>
 
                     <div className="mb-3">
-                        <label>Smoker?</label>
+                        <label>Do you smoke?</label>
                         <ToggleGroup options={["Yes", "No", "Occasionally"]} value={profile.smoker} onChange={(v) => update("smoker", v)} />
                     </div>
 
                     <div className="mb-3">
-                        <label>Drinker?</label>
+                        <label>Do you drink?</label>
                         <ToggleGroup options={["Yes", "No", "Social"]} value={profile.drinker} onChange={(v) => update("drinker", v)} />
                     </div>
 
                     <div className="mb-3">
-                        <label>Coffee Drinker?</label>
+                        <label>Do you drink coffee?</label>
                         <ToggleGroup options={["Yes", "No"]} value={profile.coffeeDrinker} onChange={(v) => update("coffeeDrinker", v)} />
                     </div>
 
@@ -150,17 +175,17 @@ function Questionnaire() {
                     </div>
 
                     <div className="mb-3">
-                        <label>Gamer?</label>
+                        <label>Are you a gamer?</label>
                         <ToggleGroup options={["Yes", "No", "Casual"]} value={profile.gamer} onChange={(v) => update("gamer", v)} />
                     </div>
 
                     <div className="mb-3">
-                        <label>Reader?</label>
+                        <label>Are you a reader?</label>
                         <ToggleGroup options={["Yes", "No", "Occasionally"]} value={profile.reader} onChange={(v) => update("reader", v)} />
                     </div>
 
                     <div className="mb-3">
-                        <label>Travel Interest</label>
+                        <label>Do you like to travel?</label>
                         <ToggleGroup options={["Love it", "Occasionally", "Not really"]} value={profile.travel} onChange={(v) => update("travel", v)} />
                     </div>
 
@@ -189,7 +214,21 @@ function Questionnaire() {
                     </div>
 
                     <div className="mb-3">
-                        <label>Bio</label>
+                        <label>What's your political standing?</label>
+                        <select className="form-select" value={profile.politicalStanding} onChange={(e) => update("politicalStanding", e.target.value)}>
+                            <option value="">Select...</option>
+                            <option>Very Liberal</option>
+                            <option>Liberal</option>
+                            <option>Moderate</option>
+                            <option>Conservative</option>
+                            <option>Very Conservative</option>
+                            <option>Apolitical</option>
+                            <option>Prefer not to say</option>
+                        </select>
+                    </div>
+
+                    <div className="mb-3">
+                        <label>Bio (optional)</label>
                         <textarea
                             className="form-control"
                             rows={3}
@@ -197,6 +236,11 @@ function Questionnaire() {
                             value={profile.bio}
                             onChange={(e) => update("bio", e.target.value)}
                         />
+                    </div>
+
+                    <div className="mb-3">
+                        <label>Do you have or want children?</label>
+                        <ToggleGroup options={["Have kids", "Want kids", "Don't want kids", "Open"]} value={profile.children} onChange={(v) => update("children", v)} />
                     </div>
 
                     <div className="mb-4">
@@ -218,80 +262,11 @@ function Questionnaire() {
                         </select>
                     </div>
 
-                    <h5 className="section-title">Relationship &amp; Family</h5>
-
-                    <div className="mb-3">
-                        <label>Children</label>
-                        <ToggleGroup options={["Want kids", "Have kids", "Don't want kids", "Open"]} value={profile.children} onChange={(v) => update("children", v)} />
-                    </div>
-
-                    <div className="mb-3">
-                        <label>Height Preference: {inchesToDisplay(profile.minHeight)} – {inchesToDisplay(profile.maxHeight)}</label>
-                        <div style={{ position: "relative", height: "30px" }}>
-                            <input
-                                type="range"
-                                min="48"
-                                max="96"
-                                value={profile.minHeight}
-                                onChange={(e) => update("minHeight", Math.min(Number(e.target.value), profile.maxHeight - 1))}
-                                className="dual-range dual-range-min"
-                            />
-                            <input
-                                type="range"
-                                min="48"
-                                max="96"
-                                value={profile.maxHeight}
-                                onChange={(e) => update("maxHeight", Math.max(Number(e.target.value), Number(profile.minHeight) + 1))}
-                                className="dual-range"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="mb-4">
-                        <label>Gender Preference <span className="text-danger">*</span></label>
-                        <ToggleGroup options={["Male", "Female", "Non-binary", "Open to all"]} value={profile.genderPref} onChange={(v) => update("genderPref", v)} />
-                    </div>
-
-                    <h5 className="section-title">Filters</h5>
-
-                    <div className="mb-3 text-start">
-                        <label>Match Age Range: {profile.minAge} - {profile.maxAge}</label>
-                        <div style={{ position: "relative", height: "30px" }}>
-                            <input
-                                type="range"
-                                min="18"
-                                max="100"
-                                value={profile.minAge}
-                                onChange={(e) => update("minAge", Math.min(Number(e.target.value), profile.maxAge - 1))}
-                                className="dual-range dual-range-min"
-                            />
-                            <input
-                                type="range"
-                                min="18"
-                                max="100"
-                                value={profile.maxAge}
-                                onChange={(e) => update("maxAge", Math.max(Number(e.target.value), Number(profile.minAge) + 1))}
-                                className="dual-range"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="mb-4">
-                        <label>Political Preference</label>
-                        <select className="form-select" value={profile.politicalPref} onChange={(e) => update("politicalPref", e.target.value)}>
-                            <option value="">Select...</option>
-                            <option>Very Liberal</option>
-                            <option>Liberal</option>
-                            <option>Moderate</option>
-                            <option>Conservative</option>
-                            <option>Very Conservative</option>
-                            <option>Apolitical</option>
-                        </select>
-                    </div>
+                    {error && <p className="text-danger small mb-3">{error}</p>}
 
                     <div className="text-center">
                         <button type="submit" className="submit-btn">
-                            Find My Matches
+                            Next: Partner Preferences →
                         </button>
                     </div>
                 </form>

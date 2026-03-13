@@ -6,14 +6,15 @@ import Questionnaire from './pages/Questionnaire'
 import Matching from './pages/Matching'
 import Chat from './pages/Chat'
 import DatePlanner from './pages/DatePlanner'
-
 import PostDateSurvey from "./components/PostDateSurvey";
+import Preferences from "./pages/Preferences";
 
 function App() {
     return (
         <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/preferences" element={<Preferences />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/questionnaire" element={<Questionnaire />} />
             <Route path="/matching" element={<Matching />} />

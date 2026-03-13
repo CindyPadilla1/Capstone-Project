@@ -8,12 +8,20 @@ function Signup() {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [location, setLocation] = useState("");
-    const [age, setAge] = useState("");
-    const [error, setError] = useState("");
-
+    const [dob, setDob] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
+    const handleDobChange = (e) => {
+        let val = e.target.value.replace(/\D/g, ""); // strip non-digits
+        if (val.length >= 3 && val.length <= 4) {
+            val = val.slice(0, 2) + "/" + val.slice(2);
+        } else if (val.length >= 5) {
+            val = val.slice(0, 2) + "/" + val.slice(2, 4) + "/" + val.slice(4, 8);
+        }
+        setDob(val);
+    };
     const handleSignup = (e) => {
         e.preventDefault();
 
@@ -32,7 +40,20 @@ function Signup() {
             return;
         }
 
-        if (!age || age < 18) {
+        if (!dob.trim()) {
+            setError("Date of birth is required.");
+            return;
+        }
+
+        const dobRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/;
+        if (!dobRegex.test(dob)) {
+            setError("Please enter your date of birth as MM/DD/YYYY.");
+            return;
+        }
+
+        const birthYear = parseInt(dob.split("/")[2]);
+        const age = new Date().getFullYear() - birthYear;
+        if (age < 18) {
             setError("You must be 18 or older.");
             return;
         }
@@ -51,7 +72,11 @@ function Signup() {
 
         // Backend disabled
         /*
-        fetch("/api/signup", {...})
+        fetch("http://localhost:3001/api/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ firstName, lastName, location, dob, email, password }),
+        });
         */
 
         navigate("/questionnaire");
@@ -100,18 +125,16 @@ function Signup() {
                     </div>
 
                     <div className="mb-3 text-start">
-                        <label>Age:</label>
+                        <label>Date of Birth:</label>
                         <input
-                            type="number"
+                            type="text"
                             className="form-control custom-input bg-light"
-                            value={age}
-                            onChange={(e) => setAge(e.target.value)}
+                            placeholder="MM/DD/YYYY"
+                            value={dob}
+                            onChange={handleDobChange}
+                            maxLength={10}
                         />
                     </div>
-
-                    {error && (
-                        <p className="text-danger small">{error}</p>
-                    )}
 
                     <div className="mb-3 text-start">
                         <label>Email:</label>
@@ -132,6 +155,10 @@ function Signup() {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
+
+                    {error && (
+                        <p className="text-danger small">{error}</p>
+                    )}
 
                     <button type="submit" className="submit-btn">
                         Next
