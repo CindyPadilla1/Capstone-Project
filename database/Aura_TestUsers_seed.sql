@@ -2,7 +2,11 @@
 -- Aura Dating - Test Users Seed File
 -- ============================================
 
--- Main test user
+
+-- ============================================
+-- MAIN TEST USER
+-- ============================================
+
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -36,19 +40,34 @@ VALUES (1, 85, NOW());
 
 INSERT INTO preferences (
     user_id, preferred_age_min, preferred_age_max,
-    preferred_gender, min_distance_miles,
-    max_distance_miles, preferred_height_min,
-    preferred_height_max, preferred_religion_type_id,
+    min_distance_miles, max_distance_miles,
+    preferred_height_min, preferred_height_max,
+    preferred_religion_type_id,
     preferred_smoking, preferred_drinking,
-    preferred_activity_level, preferred_dating_goals
+    preferred_coffee, preferred_diet,
+    preferred_activity_level, preferred_music,
+    preferred_family_oriented, preferred_isgamer,
+    preferred_isreader, preferred_travel_interest,
+    preferred_pet_interest, preferred_dating_goals,
+    preferred_personality_type, preferred_astrology_sign,
+    preferred_want_children, preferred_political_affil
 ) VALUES (
     1, 22, 30,
-    3, 0,
-    50, 60,
-    72, 6,
+    0, 50,
+    60, 72,
+    6,
     2, 3,
-    3, 3
+    1, 1,
+    3, 1,
+    1, 1,
+    1, 1,
+    1, 3,
+    3, NULL,
+    1, 3
 );
+
+INSERT INTO preference_genders (preference_id, gender_type_id)
+VALUES (1, 3);
 
 -- ============================================
 -- SHOULD MATCH
@@ -186,7 +205,7 @@ INSERT INTO users (
 INSERT INTO trust_score (user_id, internal_score, last_updated)
 VALUES (5, 25, NOW());
 
--- Priya: FILTERED - wrong religion (Atheist id 2)
+-- Priya: FILTERED - wrong religion
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -218,7 +237,7 @@ INSERT INTO users (
 INSERT INTO trust_score (user_id, internal_score, last_updated)
 VALUES (6, 80, NOW());
 
--- Tyler: FILTERED - wrong gender (Man id 2)
+-- Tyler: FILTERED - wrong gender
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -250,7 +269,7 @@ INSERT INTO users (
 INSERT INTO trust_score (user_id, internal_score, last_updated)
 VALUES (7, 80, NOW());
 
--- Sandra: FILTERED - age out of range (born 1975)
+-- Sandra: FILTERED - age out of range
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -282,7 +301,7 @@ INSERT INTO users (
 INSERT INTO trust_score (user_id, internal_score, last_updated)
 VALUES (8, 85, NOW());
 
--- Jasmine: FILTERED - wrong state (LA, CA)
+-- Jasmine: FILTERED - wrong state
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
