@@ -1,11 +1,10 @@
 // authController.js
 // Handles user signup and login.
 // POST /auth/signup — creates a new user record
-// POST /auth/login  — validates credentials and returns user info
-
-const pool = require("../config/db");
-const bcrypt = require("bcrypt");
-
+// POST /auth/login  — validates credentials and returns JWT
+const pool        = require("../config/db");
+const bcrypt      = require("bcrypt");
+const { generateToken } = require("../utils/jwtHelper"); // ← ADDED
 const SALT_ROUNDS = 10;
 
 // ─── POST /auth/signup ─────────────────────────────────────────────────────
@@ -43,7 +42,7 @@ exports.signup = async (req, res) => {
         const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
 
         // Convert age → estimated date of birth (Jan 1 of birth year)
-        const birthYear = new Date().getFullYear() - parseInt(age);
+        const birthYear     = new Date().getFullYear() - parseInt(age);
         const date_of_birth = `${birthYear}-01-01`;
 
         // Insert new user — default account_status = 'active', role_id = 1 (user), tier_id = 1 (free)
@@ -54,7 +53,6 @@ exports.signup = async (req, res) => {
              RETURNING user_id, first_name, last_name, email`,
             [firstName, lastName, email, password_hash, date_of_birth, location]
         );
-
         const newUser = result.rows[0];
 
         // Create default trust score entry
@@ -63,8 +61,12 @@ exports.signup = async (req, res) => {
             [newUser.user_id]
         );
 
+        // Generate JWT ← ADDED
+        const token = generateToken(newUser.user_id);
+
         res.status(201).json({
             message: "Account created successfully.",
+            token,          // ← ADDED
             user: newUser
         });
     } catch (err) {
@@ -111,8 +113,12 @@ exports.login = async (req, res) => {
             [user.user_id]
         );
 
+        // Generate JWT ← ADDED
+        const token = generateToken(user.user_id);
+
         res.json({
             message: "Login successful.",
+            token,          // ← ADDED
             user: {
                 user_id:    user.user_id,
                 first_name: user.first_name,
@@ -123,5 +129,25 @@ exports.login = async (req, res) => {
     } catch (err) {
         console.error("login error:", err.message);
         res.status(500).json({ error: "Login failed. Please try again." });
+    }
+};
+
+// ─── GET /auth/me ──────────────────────────────────────────────────────────
+// Protected route — requires valid JWT via authMiddleware
+// Returns the currently logged-in user's basic profile info
+exports.getMe = async (req, res) => {                   // ← ADDED
+    try {
+        const result = await pool.query(
+            `SELECT user_id, first_name, last_name, email, account_status
+             FROM users WHERE user_id = $1`,
+            [req.user.id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        res.json({ user: result.rows[0] });
+    } catch (err) {
+        console.error("getMe error:", err.message);
+        res.status(500).json({ error: "Could not fetch user." });
     }
 };

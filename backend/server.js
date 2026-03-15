@@ -2,9 +2,9 @@ require("dotenv").config(); // ← must be first before anything reads process.e
 require("./config/db");    // initializes the DB connection
 
 const express = require("express");
-const cors = require("cors");
-const app = express();
-const PORT = process.env.PORT || 4000;
+const cors    = require("cors");
+const app     = express();
+const PORT    = process.env.PORT || 4000;
 
 // Middleware
 app.use(express.json());
@@ -23,7 +23,7 @@ const profileRoutes = require("./routes/profile");
 const messageRoutes = require("./routes/messages");
 
 app.use("/matches",  matchRoutes);
-app.use("/auth",     authRoutes);
+app.use("/auth",     authRoutes);   // → /auth/signup, /auth/login, /auth/me
 app.use("/profile",  profileRoutes);
 app.use("/messages", messageRoutes);
 
