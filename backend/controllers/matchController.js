@@ -99,7 +99,7 @@ exports.getMatches = async (req, res) => {
                     : null,
                 location_city:   candidate?.location_city  || null,
                 location_state:  candidate?.location_state || null,
-                image:           candidate?.profile_photo_url || DEFAULT_PHOTO,
+                image:           candidate?.profile_photo_url || `https://ui-avatars.com/api/?background=c94b5b&color=fff&size=300&name=${encodeURIComponent((candidate?.first_name || "") + "+" + (candidate?.last_name || ""))}`,
                 starRating:      trustToStars(candidate?.trust_score),
                 score:           match.score,
                 raw_score:       match.raw_score,
