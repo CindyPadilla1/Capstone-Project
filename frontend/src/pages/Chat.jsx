@@ -1,12 +1,16 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import ChatList from "../components/ChatList";
 import ChatWindow from "../components/ChatWindow";
 import { useUser } from "../context/UserContext";
 
 function Chat() {
-    const { matches } = useUser();
-    const [selectedMatch, setSelectedMatch] = useState(null);
+    const { matchedUsers } = useUser();
+    const location = useLocation();
+    const [selectedMatch, setSelectedMatch] = useState(
+        location.state?.selectedMatch || null
+    );
 
     return (
         <>
@@ -20,7 +24,7 @@ function Chat() {
                         />
                     ) : (
                         <ChatList
-                            matches={matches}
+                            matches={matchedUsers}
                             onSelect={(match) => setSelectedMatch(match)}
                         />
                     )}

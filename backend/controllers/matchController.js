@@ -75,7 +75,6 @@ exports.getMatches = async (req, res) => {
             const avatarUrl = `https://ui-avatars.com/api/?background=c94b5b&color=fff&size=300&name=${encodeURIComponent((c.first_name || "") + "+" + (c.last_name || ""))}`;
 
             return {
-                // Identity
                 user_id:              c.user_id,
                 name:                 `${c.first_name} ${c.last_name}`.trim(),
                 first_name:           c.first_name      || null,
@@ -83,19 +82,14 @@ exports.getMatches = async (req, res) => {
                 age:                  getAge(c.date_of_birth),
                 gender:               c.gender_name     || null,
                 height:               inchesToDisplay(c.height_inches),
-                // Location
                 location:             c.location_city
                     ? `${c.location_city}${c.location_state ? ", " + c.location_state : ""}`.trim()
                     : null,
                 location_city:        c.location_city   || null,
                 location_state:       c.location_state  || null,
-                // Bio
                 bio:                  c.bio             || null,
-                // Photo
                 image:                c.profile_photo_url || avatarUrl,
-                // Trust
                 starRating:           trustToStars(c.trust_score),
-                // ── All lookup display names ──────────────────────────
                 religion_name:        c.religion_name        || null,
                 activity_name:        c.activity_name        || null,
                 children_name:        c.children_name        || null,
@@ -108,7 +102,6 @@ exports.getMatches = async (req, res) => {
                 family_oriented_name: c.family_oriented_name || null,
                 personality_name:     c.personality_type_name|| null,
                 education_name:       c.education_career_name|| null,
-                // Score info
                 score:                match.score,
                 raw_score:            match.raw_score,
                 trust_penalized:      match.trust_penalized,
@@ -200,5 +193,42 @@ exports.likeUser = async (req, res) => {
     } catch (err) {
         console.error("likeUser error:", err.message);
         res.status(500).json({ error: "Failed to record like" });
+    }
+};
+
+exports.getMutualMatches = async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        if (isNaN(userId)) return res.status(400).json({ error: "Invalid user ID" });
+
+        const result = await pool.query(
+            `SELECT
+                u.user_id,
+                (u.first_name || ' ' || u.last_name) AS name,
+                u.first_name,
+                u.last_name,
+                u.location_city AS location,
+                m.match_id,
+                COALESCE(ph.photo_url,
+                    'https://ui-avatars.com/api/?background=c94b5b&color=fff&size=300&name='
+                    || u.first_name || '+' || u.last_name
+                ) AS image,
+                ts.internal_score AS trust_score
+             FROM matches m
+             JOIN users u ON u.user_id = CASE
+                 WHEN m.user1_id = $1 THEN m.user2_id
+                 ELSE m.user1_id
+             END
+             LEFT JOIN photo       ph ON ph.user_id = u.user_id AND ph.is_primary = true
+             LEFT JOIN trust_score ts ON ts.user_id = u.user_id
+             WHERE (m.user1_id = $1 OR m.user2_id = $1)
+               AND m.match_status = 'active'`,
+            [userId]
+        );
+
+        res.json({ matches: result.rows });
+    } catch (err) {
+        console.error("getMutualMatches error:", err.message);
+        res.status(500).json({ error: "Failed to fetch mutual matches." });
     }
 };

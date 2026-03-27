@@ -8,26 +8,20 @@ const API = "http://localhost:4000";
 
 function Pill({ label }) {
     if (!label) return null;
-    return (
-        <span style={{
-            background: "#fdf0f0", color: "#a8001c", borderRadius: "20px",
-            padding: "3px 11px", fontSize: "12px", fontWeight: 500, whiteSpace: "nowrap",
-        }}>{label}</span>
-    );
+    return <span className="match-pill">{label}</span>;
 }
 
 function InfoRow({ icon, text }) {
     if (!text) return null;
     return (
-        <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", fontSize: "13px" }}>
+        <div className="match-info-row">
             <span style={{ flexShrink: 0, width: "20px" }}>{icon}</span>
-            <span style={{ color: "#444" }}>{text}</span>
+            <span>{text}</span>
         </div>
     );
 }
 
 function MatchCard({ user, onHeart, onReject, likesLeft }) {
-    console.log("User data:", user);
     const [animating, setAnimating] = useState(null);
     const outOfLikes = likesLeft !== null && likesLeft <= 0;
 
@@ -36,49 +30,36 @@ function MatchCard({ user, onHeart, onReject, likesLeft }) {
         setTimeout(() => { setAnimating(null); cb(); }, 350);
     };
 
+    const cardClass = [
+        "match-card",
+        animating === "heart"  ? "animating-heart"  : "",
+        animating === "reject" ? "animating-reject" : "",
+    ].join(" ").trim();
+
     return (
-        <div style={{
-            background: "white", borderRadius: "24px",
-            width: "100%", maxWidth: "400px",
-            boxShadow: "0 8px 32px rgba(139,0,0,0.18)",
-            overflow: "hidden",
-            transform: animating === "heart" ? "translateX(90px) rotate(8deg) scale(0.95)"
-                : animating === "reject" ? "translateX(-90px) rotate(-8deg) scale(0.95)"
-                    : "none",
-            opacity: animating ? 0 : 1,
-            transition: "transform 0.35s cubic-bezier(.4,0,.2,1), opacity 0.35s ease",
-        }}>
+        <div className={cardClass}>
 
             {/* Photo */}
             <div style={{ position: "relative" }}>
                 <img src={user.image} alt={user.name}
                      style={{ width: "100%", aspectRatio: "1/1", objectFit: "cover", display: "block" }} />
-                <div style={{
-                    position: "absolute", bottom: 0, left: 0, right: 0, height: "50%",
-                    background: "linear-gradient(to top, rgba(0,0,0,0.75), transparent)",
-                    pointerEvents: "none",
-                }} />
-                <div style={{ position: "absolute", bottom: "14px", left: "16px", color: "white" }}>
-                    <div style={{ fontSize: "21px", fontWeight: 700, lineHeight: 1.1 }}>
+                <div className="match-card-gradient" />
+                <div className="match-card-identity">
+                    <div className="match-card-identity-name">
                         {user.name}{user.age ? `, ${user.age}` : ""}
                     </div>
                     {user.location && (
-                        <div style={{ fontSize: "12px", opacity: 0.85, marginTop: "3px" }}>
-                            📍 {user.location}
-                        </div>
+                        <div className="match-card-identity-location">📍 {user.location}</div>
                     )}
                 </div>
-                <div style={{
-                    position: "absolute", top: "12px", right: "12px",
-                    background: "rgba(0,0,0,0.5)", borderRadius: "20px", padding: "3px 9px",
-                }}>
+                <div className="match-card-stars">
                     <StarRating rating={user.starRating} />
                 </div>
             </div>
 
             {/* Info */}
             <div style={{ padding: "14px 16px 8px" }}>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }}>
+                <div className="d-flex flex-wrap gap-2 mb-3">
                     <Pill label={user.gender} />
                     {user.age && <Pill label={`${user.age} yrs`} />}
                     {user.height && <Pill label={user.height} />}
@@ -94,99 +75,58 @@ function MatchCard({ user, onHeart, onReject, likesLeft }) {
                     <InfoRow icon="🎵" text={user.music_name} />
                     <InfoRow icon="🚬" text={user.smoking_name && `Smoking: ${user.smoking_name}`} />
                     <InfoRow icon="🍷" text={user.drinking_name && `Drinking: ${user.drinking_name}`} />
-                    <InfoRow icon="🥗"  text={user.diet_name} />
+                    <InfoRow icon="🥗" text={user.diet_name} />
                     <InfoRow icon="👨‍👩‍👧" text={user.family_oriented_name && `Family: ${user.family_oriented_name}`} />
                     <InfoRow icon="🎓" text={user.education_name} />
                 </div>
 
-                {user.bio && (
-                    <div style={{
-                        padding: "8px 10px", background: "#fafafa", borderRadius: "10px",
-                        color: "#555", fontStyle: "italic", fontSize: "13px",
-                        borderLeft: "3px solid #c94b5b", marginBottom: "8px",
-                    }}>
-                        "{user.bio}"
-                    </div>
-                )}
+                {user.bio && <div className="match-bio">"{user.bio}"</div>}
 
                 {user.score !== undefined && (
-                    <div style={{ fontSize: "11px", color: "#ccc", textAlign: "right" }}>
-                        Match score: {user.score}
-                    </div>
+                    <div className="match-score">Match score: {user.score}</div>
                 )}
             </div>
 
             {/* Buttons */}
-            <div style={{ display: "flex", justifyContent: "center", gap: "36px", padding: "10px 16px 22px" }}>
+            <div className="d-flex justify-content-center gap-5 pb-4 pt-2">
                 <button
+                    className="match-action-btn-reject"
                     onClick={() => fire("reject", onReject)}
-                    style={{
-                        width: "62px", height: "62px", borderRadius: "50%",
-                        border: "2px solid #e0e0e0", background: "white", fontSize: "22px",
-                        cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                        transition: "transform 0.15s", display: "flex", alignItems: "center", justifyContent: "center",
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"}
-                    onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
                 >✕</button>
 
                 <button
+                    className="match-action-btn-heart"
                     onClick={() => { if (!outOfLikes) fire("heart", onHeart); }}
                     disabled={outOfLikes}
                     title={outOfLikes ? "Daily like limit reached" : "Like"}
-                    style={{
-                        width: "62px", height: "62px", borderRadius: "50%", border: "none",
-                        background: outOfLikes ? "#ccc" : "linear-gradient(135deg,#c94b5b,#a8001c)",
-                        fontSize: "22px", cursor: outOfLikes ? "not-allowed" : "pointer",
-                        boxShadow: outOfLikes ? "none" : "0 4px 16px rgba(168,0,28,0.4)",
-                        transition: "transform 0.15s", display: "flex", alignItems: "center", justifyContent: "center",
-                    }}
-                    onMouseEnter={e => { if (!outOfLikes) e.currentTarget.style.transform = "scale(1.12)"; }}
-                    onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
                 >❤️</button>
             </div>
         </div>
     );
 }
 
-function LikedPortal({ likedUsers, onOpenChat }) {
-    if (likedUsers.length === 0) return null;
+function MatchedPortal({ matchedUsers, onOpenChat }) {
+    if (!matchedUsers || matchedUsers.length === 0) return null;
     return (
-        <div style={{
-            width: "100%", maxWidth: "400px", marginTop: "24px",
-            background: "rgba(255,255,255,0.12)", backdropFilter: "blur(8px)",
-            borderRadius: "20px", padding: "16px 18px",
-            border: "1px solid rgba(255,255,255,0.25)",
-        }}>
-            <div style={{ color: "white", fontWeight: 700, fontSize: "15px", marginBottom: "12px" }}>
-                ❤️ Liked — {likedUsers.length} {likedUsers.length === 1 ? "person" : "people"}
-            </div>
-            {likedUsers.map((u, i) => (
-                <div key={i} onClick={() => onOpenChat(u)}
-                     style={{
-                         display: "flex", alignItems: "center", gap: "12px",
-                         background: "rgba(255,255,255,0.92)", borderRadius: "14px",
-                         padding: "10px 14px", marginBottom: "8px",
-                         cursor: "pointer", transition: "transform 0.15s",
-                     }}
-                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
-                     onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+        <div className="liked-portal mt-4 p-3">
+            <p className="text-white fw-bold mb-3">
+                🎉 Matches — {matchedUsers.length} {matchedUsers.length === 1 ? "match" : "matches"}
+            </p>
+            {matchedUsers.map((u, i) => (
+                <div key={i}
+                     className="liked-portal-row d-flex align-items-center gap-3 p-2 mb-2 rounded"
+                     onClick={() => onOpenChat(u)}
+                     style={{ cursor: "pointer", background: "rgba(255,255,255,0.92)" }}
                 >
-                    <img src={u.image} alt={u.name} style={{
-                        width: "44px", height: "44px", borderRadius: "50%",
-                        objectFit: "cover", border: "2px solid #c94b5b", flexShrink: 0,
-                    }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: "14px", color: "#1a1a1a" }}>{u.name}</div>
-                        <div style={{ fontSize: "12px", color: "#888", marginTop: "1px" }}>
+                    <img src={u.image} alt={u.name} className="rounded-circle"
+                         style={{ width: "44px", height: "44px", objectFit: "cover", border: "2px solid #c94b5b" }} />
+                    <div className="flex-grow-1">
+                        <div className="fw-bold small">{u.name}</div>
+                        <div className="text-muted" style={{ fontSize: "12px" }}>
                             {[u.location, u.age && `${u.age} yrs`, u.gender].filter(Boolean).join(" · ")}
                         </div>
                     </div>
-                    <div style={{
-                        fontSize: "12px", fontWeight: 600, color: "#a8001c",
-                        background: "#fdf0f0", borderRadius: "10px",
-                        padding: "4px 10px", whiteSpace: "nowrap",
-                    }}>Message →</div>
+                    <span className="liked-portal-badge">Message →</span>
                 </div>
             ))}
         </div>
@@ -194,7 +134,13 @@ function LikedPortal({ likedUsers, onOpenChat }) {
 }
 
 export default function Matching() {
-    const { matches, matchesLoading, matchesError, currentUser, token, likedUsers, addLikedUser } = useUser();
+    const {
+        matches, setMatches, matchesLoading, matchesError,
+        currentUser, token,
+        matchedUsers, addMatchedUser,
+        rejectUser,
+    } = useUser();
+
     const [currentIndex, setCurrentIndex] = useState(0);
     const [likesLeft, setLikesLeft]       = useState(null);
     const [showItsMatch, setShowItsMatch] = useState(false);
@@ -207,9 +153,7 @@ export default function Matching() {
         const liked = matches[currentIndex];
         if (!liked || !currentUser) return;
 
-        // ✅ Always add to liked list regardless of API response
-        addLikedUser(liked);
-        setCurrentIndex(prev => prev + 1);
+        setMatches(prev => prev.filter(m => m.user_id !== liked.user_id));
 
         try {
             const res = await fetch(`${API}/matches/${currentUser.user_id}/like`, {
@@ -218,16 +162,30 @@ export default function Matching() {
                 body: JSON.stringify({ liked_user_id: liked.user_id }),
             });
             const data = await res.json();
+
+            if (res.status === 409) return;
+
             if (data.likes_left !== undefined) setLikesLeft(data.likes_left);
+
             if (data.match_created) {
+                addMatchedUser(liked);
                 setShowItsMatch(true);
                 setTimeout(() => setShowItsMatch(false), 2000);
             }
-        } catch (err) { console.error("Like failed:", err); }
+        } catch (err) {
+            console.error("Like failed:", err);
+        }
     };
 
-    const handleReject   = () => setCurrentIndex(prev => prev + 1);
+    const handleReject = () => {
+        const rejected = matches[currentIndex];
+        if (!rejected) return;
+        rejectUser(rejected.user_id);
+        setMatches(prev => prev.filter(m => m.user_id !== rejected.user_id));
+    };
+
     const handleOpenChat = (user) => navigate("/chat", { state: { selectedMatch: user } });
+    const allSwiped = currentIndex >= (matches?.length ?? 0);
 
     if (matchesLoading) return (
         <><Navbar />
@@ -235,6 +193,7 @@ export default function Matching() {
                 <p className="text-white">Finding your matches...</p>
             </div></>
     );
+
     if (matchesError) return (
         <><Navbar />
             <div className="faded-background d-flex justify-content-center align-items-center min-vh-100 min-vw-100">
@@ -242,60 +201,43 @@ export default function Matching() {
             </div></>
     );
 
-    const allSwiped = currentIndex >= matches.length;
-
     return (
         <>
             <Navbar />
 
             {showItsMatch && (
-                <div style={{
-                    position: "fixed", inset: 0, background: "rgba(168,0,28,0.88)",
-                    display: "flex", flexDirection: "column",
-                    alignItems: "center", justifyContent: "center",
-                    zIndex: 9999, pointerEvents: "none",
-                }}>
+                <div className="its-a-match-overlay d-flex flex-column align-items-center justify-content-center">
                     <div style={{ fontSize: "56px" }}>❤️</div>
-                    <div style={{ color: "white", fontSize: "32px", fontWeight: 800, marginTop: "12px" }}>
-                        It's a match!
-                    </div>
+                    <h2 className="text-white fw-bold mt-3">It's a match!</h2>
                 </div>
             )}
 
-            <div className="faded-background min-vh-100 min-vw-100" style={{
-                display: "flex", flexDirection: "column",
-                alignItems: "center", paddingTop: "24px", paddingBottom: "40px",
-            }}>
+            <div className="faded-background min-vh-100 min-vw-100 d-flex flex-column align-items-center pt-4 pb-5">
+
                 {!allSwiped && matches.length > 0 && (
-                    <div style={{
-                        color: "rgba(255,255,255,0.8)", fontSize: "13px",
-                        marginBottom: "16px", display: "flex", gap: "20px",
-                    }}>
-                        <span>{currentIndex + 1} of {matches.length}</span>
+                    <p className="text-white small mb-3" style={{ opacity: 0.7 }}>
+                        {currentIndex + 1} / {matches.length}
                         {likesLeft !== null && (
-                            <span>❤️ {likesLeft} like{likesLeft !== 1 ? "s" : ""} left today</span>
+                            <span className="ms-3">
+                                ❤️ {likesLeft} like{likesLeft !== 1 ? "s" : ""} left today
+                            </span>
                         )}
-                    </div>
+                    </p>
                 )}
 
                 {allSwiped || matches.length === 0 ? (
-                    <div style={{
-                        background: "rgba(255,255,255,0.12)", backdropFilter: "blur(8px)",
-                        borderRadius: "24px", padding: "48px 32px", textAlign: "center",
-                        color: "white", maxWidth: "400px", width: "100%",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                    }}>
-                        <div style={{ fontSize: "48px", marginBottom: "16px" }}>
+                    <div className="text-center text-white p-5">
+                        <div style={{ fontSize: "48px" }}>
                             {matches.length === 0 ? "🔍" : "✨"}
                         </div>
-                        <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "8px" }}>
+                        <h5 className="mt-3">
                             {matches.length === 0 ? "No matches found yet" : "You've seen everyone!"}
-                        </div>
-                        <div style={{ fontSize: "14px", opacity: 0.75 }}>
+                        </h5>
+                        <p className="small opacity-75">
                             {matches.length === 0
                                 ? "Complete your profile to get better matches."
                                 : "Check back tomorrow for new matches."}
-                        </div>
+                        </p>
                     </div>
                 ) : (
                     <MatchCard
@@ -306,7 +248,7 @@ export default function Matching() {
                     />
                 )}
 
-                <LikedPortal likedUsers={likedUsers} onOpenChat={handleOpenChat} />
+                <MatchedPortal matchedUsers={matchedUsers} onOpenChat={handleOpenChat} />
             </div>
         </>
     );
