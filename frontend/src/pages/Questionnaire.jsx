@@ -25,20 +25,58 @@ function Questionnaire() {
     const update = (field, value) => setProfile((prev) => ({ ...prev, [field]: value }));
 
     const inchesToDisplay = (inches) => {
-        const ft = Math.floor(inches / 12);
+        const ft   = Math.floor(inches / 12);
         const inch = inches % 12;
         return `${ft}'${inch}"`;
     };
 
     const [error, setError] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!profile.religion || !profile.datingGoal || !profile.personality || !profile.gender) {
             setError("Please fill in all required fields.");
             return;
         }
         setError("");
+
+        try {
+            const token = localStorage.getItem("token");
+            await fetch("http://localhost:4000/profile/save", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    gender:            profile.gender,
+                    religion:          profile.religion,
+                    ethnicity:         profile.ethnicity,
+                    education:         profile.education,
+                    height:            profile.height,
+                    familyOriented:    profile.familyOriented,
+                    smoker:            profile.smoker,
+                    drinker:           profile.drinker,
+                    coffeeDrinker:     profile.coffeeDrinker,
+                    diet:              profile.diet,
+                    activityLevel:     profile.activityLevel,
+                    musicPref:         profile.musicPref,
+                    gamer:             profile.gamer,
+                    reader:            profile.reader,
+                    travel:            profile.travel,
+                    pets:              profile.pets,
+                    personality:       profile.personality,
+                    datingGoal:        profile.datingGoal,
+                    bio:               profile.bio,
+                    children:          profile.children,
+                    astrology:         profile.astrology,
+                    politicalStanding: profile.politicalStanding,
+                })
+            });
+        } catch (err) {
+            console.error("Questionnaire save error:", err);
+        }
+
         navigate("/preferences");
     };
 
@@ -57,13 +95,16 @@ function Questionnaire() {
 
                     <div className="mb-3">
                         <label>Gender <span className="text-danger">*</span></label>
-                        <ToggleGroup options={["Male", "Female", "Non-binary"]} value={profile.gender} onChange={(v) => update("gender", v)} />
+                        <ToggleGroup options={["Male", "Female", "Non-binary"]} value={profile.gender}
+                                     onChange={(v) => update("gender", v)} />
                     </div>
 
                     <div className="mb-3">
                         <label>Religion <span className="text-danger">*</span></label>
-                        <select className="form-select" value={profile.religion} onChange={(e) => update("religion", e.target.value)}>
+                        <select className="form-select" value={profile.religion}
+                                onChange={(e) => update("religion", e.target.value)}>
                             <option value="">Select...</option>
+                            <option>No preference</option>
                             <option>Atheist</option>
                             <option>Agnostic</option>
                             <option>Buddhist</option>
@@ -81,8 +122,10 @@ function Questionnaire() {
 
                     <div className="mb-3">
                         <label>Ethnicity</label>
-                        <select className="form-select" value={profile.ethnicity} onChange={(e) => update("ethnicity", e.target.value)}>
+                        <select className="form-select" value={profile.ethnicity}
+                                onChange={(e) => update("ethnicity", e.target.value)}>
                             <option value="">Select...</option>
+                            <option>No preference</option>
                             <option>Asian</option>
                             <option>Black / African American</option>
                             <option>Hispanic / Latino</option>
@@ -98,67 +141,72 @@ function Questionnaire() {
 
                     <div className="mb-3">
                         <label>Education</label>
-                        <select className="form-select" value={profile.education} onChange={(e) => update("education", e.target.value)}>
+                        <select className="form-select" value={profile.education}
+                                onChange={(e) => update("education", e.target.value)}>
                             <option value="">Select...</option>
+                            <option>No preference</option>
                             <option>High School</option>
                             <option>Some College</option>
                             <option>Associate's Degree</option>
                             <option>Bachelor's Degree</option>
                             <option>Master's Degree</option>
                             <option>Doctorate / PhD</option>
-                            <option>Trade</option>
+                            <option>Trade / Vocational</option>
+                            <option>Other</option>
                         </select>
                     </div>
 
                     <div className="mb-3">
                         <label>Your Height: {inchesToDisplay(profile.height)}</label>
-                        <input
-                            type="range"
-                            min="48"
-                            max="96"
-                            value={profile.height}
-                            onChange={(e) => update("height", Number(e.target.value))}
-                            className="single-range mt-1"
-                        />
+                        <input type="range" min="48" max="96" value={profile.height}
+                               onChange={(e) => update("height", Number(e.target.value))}
+                               className="single-range mt-1" />
                     </div>
 
                     <div className="mb-4">
                         <label>Family-Oriented?</label>
-                        <ToggleGroup options={["Yes", "No"]} value={profile.familyOriented} onChange={(v) => update("familyOriented", v)} />
+                        <ToggleGroup options={["No preference", "Yes", "No"]} value={profile.familyOriented}
+                                     onChange={(v) => update("familyOriented", v)} />
                     </div>
 
                     <h5 className="section-title">Lifestyle &amp; Habits</h5>
 
                     <div className="mb-3">
                         <label>Do you smoke?</label>
-                        <ToggleGroup options={["Yes", "No", "Occasionally"]} value={profile.smoker} onChange={(v) => update("smoker", v)} />
+                        <ToggleGroup options={["Yes", "No", "Occasionally"]} value={profile.smoker}
+                                     onChange={(v) => update("smoker", v)} />
                     </div>
 
                     <div className="mb-3">
                         <label>Do you drink?</label>
-                        <ToggleGroup options={["Yes", "No", "Social"]} value={profile.drinker} onChange={(v) => update("drinker", v)} />
+                        <ToggleGroup options={["Yes", "No", "Social"]} value={profile.drinker}
+                                     onChange={(v) => update("drinker", v)} />
                     </div>
 
                     <div className="mb-3">
                         <label>Do you drink coffee?</label>
-                        <ToggleGroup options={["Yes", "No"]} value={profile.coffeeDrinker} onChange={(v) => update("coffeeDrinker", v)} />
+                        <ToggleGroup options={["Yes", "No"]} value={profile.coffeeDrinker}
+                                     onChange={(v) => update("coffeeDrinker", v)} />
                     </div>
 
                     <div className="mb-3">
                         <label>Diet</label>
-                        <ToggleGroup options={["Omnivore", "Vegetarian", "Vegan", "Other"]} value={profile.diet} onChange={(v) => update("diet", v)} />
+                        <ToggleGroup options={["Omnivore", "Vegetarian", "Vegan", "Other"]} value={profile.diet}
+                                     onChange={(v) => update("diet", v)} />
                     </div>
 
                     <div className="mb-4">
                         <label>Activity Level</label>
-                        <ToggleGroup options={["Low", "Medium", "High"]} value={profile.activityLevel} onChange={(v) => update("activityLevel", v)} />
+                        <ToggleGroup options={["No preference", "Low", "Medium", "High"]} value={profile.activityLevel}
+                                     onChange={(v) => update("activityLevel", v)} />
                     </div>
 
                     <h5 className="section-title">Interests &amp; Hobbies</h5>
 
                     <div className="mb-3">
                         <label>Music Preference</label>
-                        <select className="form-select" value={profile.musicPref} onChange={(e) => update("musicPref", e.target.value)}>
+                        <select className="form-select" value={profile.musicPref}
+                                onChange={(e) => update("musicPref", e.target.value)}>
                             <option value="">Select...</option>
                             <option>Pop</option>
                             <option>Hip-Hop / Rap</option>
@@ -176,22 +224,26 @@ function Questionnaire() {
 
                     <div className="mb-3">
                         <label>Are you a gamer?</label>
-                        <ToggleGroup options={["Yes", "No", "Casual"]} value={profile.gamer} onChange={(v) => update("gamer", v)} />
+                        <ToggleGroup options={["Yes", "No", "Casual"]} value={profile.gamer}
+                                     onChange={(v) => update("gamer", v)} />
                     </div>
 
                     <div className="mb-3">
                         <label>Are you a reader?</label>
-                        <ToggleGroup options={["Yes", "No", "Occasionally"]} value={profile.reader} onChange={(v) => update("reader", v)} />
+                        <ToggleGroup options={["Yes", "No", "Occasionally"]} value={profile.reader}
+                                     onChange={(v) => update("reader", v)} />
                     </div>
 
                     <div className="mb-3">
                         <label>Do you like to travel?</label>
-                        <ToggleGroup options={["Love it", "Occasionally", "Not really"]} value={profile.travel} onChange={(v) => update("travel", v)} />
+                        <ToggleGroup options={["Love it", "Occasionally", "Not really"]} value={profile.travel}
+                                     onChange={(v) => update("travel", v)} />
                     </div>
 
                     <div className="mb-4">
                         <label>Animals / Pets</label>
-                        <select className="form-select" value={profile.pets} onChange={(e) => update("pets", e.target.value)}>
+                        <select className="form-select" value={profile.pets}
+                                onChange={(e) => update("pets", e.target.value)}>
                             <option value="">Select...</option>
                             <option>Love animals</option>
                             <option>Have pets</option>
@@ -205,18 +257,23 @@ function Questionnaire() {
 
                     <div className="mb-3">
                         <label>Personality Type <span className="text-danger">*</span></label>
-                        <ToggleGroup options={["Introvert", "Extrovert", "Ambivert"]} value={profile.personality} onChange={(v) => update("personality", v)} />
+                        <ToggleGroup options={["Introvert", "Extrovert", "Ambivert"]} value={profile.personality}
+                                     onChange={(v) => update("personality", v)} />
                     </div>
 
                     <div className="mb-3">
                         <label>Dating Goals <span className="text-danger">*</span></label>
-                        <ToggleGroup options={["Casual", "Serious", "Long-term"]} value={profile.datingGoal} onChange={(v) => update("datingGoal", v)} />
+                        <ToggleGroup options={["No preference", "Casual", "Serious", "Long-term"]}
+                                     value={profile.datingGoal}
+                                     onChange={(v) => update("datingGoal", v)} />
                     </div>
 
                     <div className="mb-3">
                         <label>What's your political standing?</label>
-                        <select className="form-select" value={profile.politicalStanding} onChange={(e) => update("politicalStanding", e.target.value)}>
+                        <select className="form-select" value={profile.politicalStanding}
+                                onChange={(e) => update("politicalStanding", e.target.value)}>
                             <option value="">Select...</option>
+                            <option>No preference</option>
                             <option>Very Liberal</option>
                             <option>Liberal</option>
                             <option>Moderate</option>
@@ -229,36 +286,29 @@ function Questionnaire() {
 
                     <div className="mb-3">
                         <label>Bio (optional)</label>
-                        <textarea
-                            className="form-control"
-                            rows={3}
-                            placeholder="Tell us more about yourself..."
-                            value={profile.bio}
-                            onChange={(e) => update("bio", e.target.value)}
-                        />
+                        <textarea className="form-control" rows={3}
+                                  placeholder="Tell us more about yourself..."
+                                  value={profile.bio}
+                                  onChange={(e) => update("bio", e.target.value)} />
                     </div>
 
                     <div className="mb-3">
                         <label>Do you have or want children?</label>
-                        <ToggleGroup options={["Have kids", "Want kids", "Don't want kids", "Open"]} value={profile.children} onChange={(v) => update("children", v)} />
+                        <ToggleGroup
+                            options={["No preference", "Want kids", "Have kids", "Don't want kids", "Open"]}
+                            value={profile.children}
+                            onChange={(v) => update("children", v)} />
                     </div>
 
                     <div className="mb-4">
                         <label>Astrology Sign (optional)</label>
-                        <select className="form-select" value={profile.astrology} onChange={(e) => update("astrology", e.target.value)}>
+                        <select className="form-select" value={profile.astrology}
+                                onChange={(e) => update("astrology", e.target.value)}>
                             <option value="">Select...</option>
-                            <option>Aries</option>
-                            <option>Taurus</option>
-                            <option>Gemini</option>
-                            <option>Cancer</option>
-                            <option>Leo</option>
-                            <option>Virgo</option>
-                            <option>Libra</option>
-                            <option>Scorpio</option>
-                            <option>Sagittarius</option>
-                            <option>Capricorn</option>
-                            <option>Aquarius</option>
-                            <option>Pisces</option>
+                            <option>Aries</option><option>Taurus</option><option>Gemini</option>
+                            <option>Cancer</option><option>Leo</option><option>Virgo</option>
+                            <option>Libra</option><option>Scorpio</option><option>Sagittarius</option>
+                            <option>Capricorn</option><option>Aquarius</option><option>Pisces</option>
                         </select>
                     </div>
 
@@ -269,6 +319,7 @@ function Questionnaire() {
                             Next: Partner Preferences →
                         </button>
                     </div>
+
                 </form>
             </div>
         </div>

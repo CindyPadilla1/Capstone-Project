@@ -3,14 +3,13 @@
 // POST /auth/login  — validates credentials, returns JWT
 // GET  /auth/me     — returns current user profile (called by UserContext on load)
 
-const pool   = require("../config/db");
+const pool  = require("../config/db");
 const bcrypt = require("bcrypt");
+const { generateToken } = require("../utils/jwtHelper");
 
 const SALT_ROUNDS = 10;
 
 // ─── POST /auth/signup ─────────────────────────────────────────────────────
-// Expects: { firstName, lastName, location, dob, email, password }
-// Alex's signup.jsx sends dob as "MM/DD/YYYY" string (not age number).
 exports.signup = async (req, res) => {
     const { firstName, lastName, location, dob, age, email, password } = req.body;
 
@@ -24,27 +23,21 @@ exports.signup = async (req, res) => {
         return res.status(400).json({ error: "Password must be at least 6 characters." });
     }
 
-    // Support both dob (MM/DD/YYYY) and age (number) from frontend
     let date_of_birth;
     if (dob) {
-        // Alex sends MM/DD/YYYY — convert to YYYY-MM-DD for postgres
         const parts = dob.split("/");
         if (parts.length === 3) {
             const [month, day, year] = parts;
             date_of_birth = `${year}-${month.padStart(2,"0")}-${day.padStart(2,"0")}`;
-            const birthYear = parseInt(year);
-            const userAge = new Date().getFullYear() - birthYear;
-            if (userAge < 18) {
+            if (new Date().getFullYear() - parseInt(year) < 18) {
                 return res.status(400).json({ error: "You must be 18 or older." });
             }
         } else {
             return res.status(400).json({ error: "Invalid date of birth format." });
         }
     } else if (age) {
-        // Fallback: age as number
         if (age < 18) return res.status(400).json({ error: "You must be 18 or older." });
-        const birthYear = new Date().getFullYear() - parseInt(age);
-        date_of_birth = `${birthYear}-01-01`;
+        date_of_birth = `${new Date().getFullYear() - parseInt(age)}-01-01`;
     } else {
         return res.status(400).json({ error: "Date of birth is required." });
     }
@@ -61,27 +54,21 @@ exports.signup = async (req, res) => {
 
         const result = await pool.query(
             `INSERT INTO users
-                (first_name, last_name, email, password_hash, date_of_birth, location_city, account_status, created_at, role_id, tier_id)
-             VALUES ($1, $2, $3, $4, $5, $6, 'active', NOW(), 1, 1)
+                (first_name, last_name, email, password_hash, date_of_birth,
+                 location_city, account_status, created_at, role_id, tier_id)
+             VALUES ($1,$2,$3,$4,$5,$6,'active',NOW(),1,1)
              RETURNING user_id, first_name, last_name, email`,
             [firstName, lastName, email, password_hash, date_of_birth, location]
         );
 
         const newUser = result.rows[0];
 
-        // Create default trust score
         await pool.query(
             "INSERT INTO trust_score (user_id, internal_score, last_updated) VALUES ($1, 75, NOW())",
             [newUser.user_id]
         );
 
-        // Generate JWT
-        const jwt = require("jsonwebtoken");
-        const token = jwt.sign(
-            { id: newUser.user_id },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-        );
+        const token = generateToken(newUser.user_id);
 
         res.status(201).json({
             message: "Account created successfully.",
@@ -104,8 +91,8 @@ exports.login = async (req, res) => {
 
     try {
         const result = await pool.query(
-            `SELECT u.user_id, u.first_name, u.last_name, u.email, u.password_hash, u.account_status
-             FROM users u WHERE u.email = $1`,
+            `SELECT user_id, first_name, last_name, email, password_hash, account_status
+             FROM users WHERE email = $1`,
             [email]
         );
 
@@ -129,12 +116,7 @@ exports.login = async (req, res) => {
             [user.user_id]
         );
 
-        const jwt = require("jsonwebtoken");
-        const token = jwt.sign(
-            { id: user.user_id },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-        );
+        const token = generateToken(user.user_id);
 
         res.json({
             message: "Login successful.",
@@ -153,11 +135,17 @@ exports.login = async (req, res) => {
 };
 
 // ─── GET /auth/me ──────────────────────────────────────────────────────────
-// Called by UserContext.loadUserProfile() on every login/page load.
-// Returns full user profile with all joined label names.
+// Column names verified against live DB:
+// smoking.smoking_name, drinking.drinking_name, coffee_drinker.coffee_name
+// diet.diet_name, activity_level.activity_name, music.music_name
+// dating_goals.dating_goal_name, political_affil.political_affil (no _name)
+// want_children.want_children (no _name), family_oriented.family_oriented_name
+// personality_type.personality_type_name, gamer.isgamer_name
+// reader.isreader_name, travel_interest.travel_interest_name
+// pet_interest.pet_interest_name, astrology_sign.astrology_sign
 exports.getMe = async (req, res) => {
     try {
-        const userId = req.user.id; // set by authMiddleware
+        const userId = req.user.id;
 
         const result = await pool.query(
             `SELECT
@@ -171,6 +159,12 @@ exports.getMe = async (req, res) => {
                 u.location_state,
                 u.bio,
                 u.profile_photo_url,
+                u.gamer,
+                u.reader,
+                u.travel,
+                u.pet_interest,
+                u.astrology,
+                u.family_oriented,
                 gt.gender_name,
                 rt.religion_name,
                 et.ethnicity_name,
@@ -182,34 +176,38 @@ exports.getMe = async (req, res) => {
                 al.activity_name,
                 mu.music_name,
                 pe.personality_type_name,
-                dg.dating_goals_name,
-                po.political_name,
-                ch.children_name,
+                dg.dating_goal_name,
+                po.political_affil      AS political_name,
+                wc.want_children        AS children_name,
                 fo.family_oriented_name,
-                u.gamer,
-                u.reader,
-                u.travel,
-                u.pet_interest,
-                u.astrology,
-                u.family_oriented,
-                ts.internal_score AS trust_score
+                gm.isgamer_name,
+                rd.isreader_name,
+                tr.travel_interest_name,
+                pi.pet_interest_name,
+                az.astrology_sign       AS astrology_name,
+                ts.internal_score       AS trust_score
             FROM users u
-            LEFT JOIN gender_type         gt ON gt.gender_type_id       = u.gender_identity
-            LEFT JOIN religion_type       rt ON rt.religion_type_id     = u.religion_id
-            LEFT JOIN ethnicity_type      et ON et.ethnicity_type_id    = u.ethnicity_id
-            LEFT JOIN education_career    ec ON ec.education_career_id  = u.education_career_id
-            LEFT JOIN smoking_type        sm ON sm.smoking_id           = u.smoking_id
-            LEFT JOIN drinking_type       dr ON dr.drinking_id          = u.drinking_id
-            LEFT JOIN coffee_type         co ON co.coffee_id            = u.coffee_id
-            LEFT JOIN diet_type           di ON di.diet_id              = u.diet_id
-            LEFT JOIN activity_level_type al ON al.activity_level_id   = u.activity_level
-            LEFT JOIN music_type          mu ON mu.music_id             = u.music
-            LEFT JOIN personality_type    pe ON pe.personality_type_id  = u.personality_type
-            LEFT JOIN dating_goals_type   dg ON dg.dating_goals_id      = u.dating_goals
-            LEFT JOIN political_affil     po ON po.political_id         = u.political
-            LEFT JOIN children_type       ch ON ch.children_id          = u.children
-            LEFT JOIN family_oriented_type fo ON fo.family_oriented_id  = u.family_oriented
-            LEFT JOIN trust_score         ts ON ts.user_id              = u.user_id
+            LEFT JOIN gender_type      gt ON gt.gender_type_id      = u.gender_identity
+            LEFT JOIN religion_type    rt ON rt.religion_type_id    = u.religion_id
+            LEFT JOIN ethnicity_type   et ON et.ethnicity_type_id   = u.ethnicity_id
+            LEFT JOIN education_career ec ON ec.education_career_id = u.education_career_id
+            LEFT JOIN smoking          sm ON sm.smoking_id          = u.smoking_id
+            LEFT JOIN drinking         dr ON dr.drinking_id         = u.drinking_id
+            LEFT JOIN coffee_drinker   co ON co.coffee_id           = u.coffee_id
+            LEFT JOIN diet             di ON di.diet_id             = u.diet_id
+            LEFT JOIN activity_level   al ON al.activity_level_id  = u.activity_level
+            LEFT JOIN music            mu ON mu.music_id            = u.music
+            LEFT JOIN personality_type pe ON pe.personality_type_id = u.personality_type
+            LEFT JOIN dating_goals     dg ON dg.dating_goals_id     = u.dating_goals
+            LEFT JOIN political_affil  po ON po.political_affil_id  = u.political
+            LEFT JOIN want_children    wc ON wc.want_children_id    = u.children
+            LEFT JOIN family_oriented  fo ON fo.family_oriented_id  = u.family_oriented
+            LEFT JOIN gamer            gm ON gm.isgamer_id          = u.gamer
+            LEFT JOIN reader           rd ON rd.isreader_id         = u.reader
+            LEFT JOIN travel_interest  tr ON tr.travel_interest_id  = u.travel
+            LEFT JOIN pet_interest     pi ON pi.pet_interest_id     = u.pet_interest
+            LEFT JOIN astrology_sign   az ON az.astrology_sign_id   = u.astrology
+            LEFT JOIN trust_score      ts ON ts.user_id             = u.user_id
             WHERE u.user_id = $1`,
             [userId]
         );
