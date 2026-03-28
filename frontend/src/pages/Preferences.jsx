@@ -32,7 +32,7 @@ function Preferences() {
 
     const [error, setError] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!preferences.genderPref) {
             setError("Please select a gender preference.");
@@ -40,14 +40,27 @@ function Preferences() {
         }
         setError("");
 
-        // BACKEND DISABLED
-        /*
-        fetch("/api/save-preferences", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(preferences)
-        });
-        */
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch("http://localhost:4000/profile/preferences", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(preferences)
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                setError(data.error || "Failed to save preferences.");
+                return;
+            }
+        } catch (err) {
+            console.error("Preferences save error:", err);
+            // Don't block navigation on network error
+        }
+
         navigate("/matching");
     };
 

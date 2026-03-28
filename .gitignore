@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+frontend/node_modules/
+backend/uploads/
+*.jpeg
+*.jpg
+*.png
+verify_columns.js
+check2.js
+checkBhadie.js
+checkSeeds.js
+seedErika.js
+seedErikaPrefs.js
+createNotifications.js
