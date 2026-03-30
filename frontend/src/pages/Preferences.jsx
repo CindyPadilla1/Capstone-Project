@@ -23,14 +23,13 @@ function Preferences() {
     const navigate = useNavigate();
     const { preferences, setPreferences } = useUser();
     const update = (field, value) => setPreferences((prev) => ({ ...prev, [field]: value }));
+    const [error, setError] = useState("");
 
     const inchesToDisplay = (inches) => {
         const ft = Math.floor(inches / 12);
         const inch = inches % 12;
         return `${ft}'${inch}"`;
     };
-
-    const [error, setError] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -58,7 +57,6 @@ function Preferences() {
             }
         } catch (err) {
             console.error("Preferences save error:", err);
-            // Don't block navigation on network error
         }
 
         navigate("/matching");
@@ -72,7 +70,7 @@ function Preferences() {
                 <h2 className="fs-6 text-white">Tell us what you're looking for in a partner.</h2>
             </div>
 
-            <div className="login-card p-4 text-start mb-4" style={{ width: "90%", maxWidth: "500px" }}>
+            <div className="login-card form-card p-4 text-start mb-4">
                 <form onSubmit={handleSubmit}>
 
                     <h5 className="section-title">Basic Preferences</h5>
@@ -88,45 +86,25 @@ function Preferences() {
 
                     <div className="mb-4">
                         <label>Age Range: {preferences.minAge} – {preferences.maxAge}</label>
-                        <div style={{ position: "relative", height: "30px" }}>
-                            <input
-                                type="range"
-                                min="18"
-                                max="100"
-                                value={preferences.minAge}
-                                onChange={(e) => update("minAge", Math.min(Number(e.target.value), preferences.maxAge - 1))}
-                                className="dual-range dual-range-min"
-                            />
-                            <input
-                                type="range"
-                                min="18"
-                                max="100"
-                                value={preferences.maxAge}
-                                onChange={(e) => update("maxAge", Math.max(Number(e.target.value), Number(preferences.minAge) + 1))}
-                                className="dual-range"
-                            />
+                        <div className="dual-range-container">
+                            <input type="range" min="18" max="100" value={preferences.minAge}
+                                   onChange={(e) => update("minAge", Math.min(Number(e.target.value), preferences.maxAge - 1))}
+                                   className="dual-range dual-range-min" />
+                            <input type="range" min="18" max="100" value={preferences.maxAge}
+                                   onChange={(e) => update("maxAge", Math.max(Number(e.target.value), Number(preferences.minAge) + 1))}
+                                   className="dual-range" />
                         </div>
                     </div>
 
                     <div className="mb-4">
                         <label>Height Range: {inchesToDisplay(preferences.minHeight)} – {inchesToDisplay(preferences.maxHeight)}</label>
-                        <div style={{ position: "relative", height: "30px" }}>
-                            <input
-                                type="range"
-                                min="48"
-                                max="96"
-                                value={preferences.minHeight}
-                                onChange={(e) => update("minHeight", Math.min(Number(e.target.value), preferences.maxHeight - 1))}
-                                className="dual-range dual-range-min"
-                            />
-                            <input
-                                type="range"
-                                min="48"
-                                max="96"
-                                value={preferences.maxHeight}
-                                onChange={(e) => update("maxHeight", Math.max(Number(e.target.value), Number(preferences.minHeight) + 1))}
-                                className="dual-range"
-                            />
+                        <div className="dual-range-container">
+                            <input type="range" min="48" max="96" value={preferences.minHeight}
+                                   onChange={(e) => update("minHeight", Math.min(Number(e.target.value), preferences.maxHeight - 1))}
+                                   className="dual-range dual-range-min" />
+                            <input type="range" min="48" max="96" value={preferences.maxHeight}
+                                   onChange={(e) => update("maxHeight", Math.max(Number(e.target.value), Number(preferences.minHeight) + 1))}
+                                   className="dual-range" />
                         </div>
                     </div>
 
@@ -134,47 +112,36 @@ function Preferences() {
 
                     <div className="mb-3">
                         <label>Religion Preference</label>
-                        <select className="form-select" value={preferences.religionPref} onChange={(e) => update("religionPref", e.target.value)}>
+                        <select className="form-select" value={preferences.religionPref}
+                                onChange={(e) => update("religionPref", e.target.value)}>
                             <option value="">No preference</option>
-                            <option>Atheist</option>
-                            <option>Agnostic</option>
-                            <option>Buddhist</option>
-                            <option>Catholic</option>
-                            <option>Christian</option>
-                            <option>Hindu</option>
-                            <option>Jewish</option>
-                            <option>Mormon</option>
-                            <option>Muslim</option>
-                            <option>Spiritual (non-religious)</option>
-                            <option>Other</option>
+                            <option>Atheist</option><option>Agnostic</option><option>Buddhist</option>
+                            <option>Catholic</option><option>Christian</option><option>Hindu</option>
+                            <option>Jewish</option><option>Mormon</option><option>Muslim</option>
+                            <option>Spiritual (non-religious)</option><option>Other</option>
                         </select>
                     </div>
 
                     <div className="mb-3">
                         <label>Ethnicity Preference</label>
-                        <select className="form-select" value={preferences.ethnicityPref} onChange={(e) => update("ethnicityPref", e.target.value)}>
+                        <select className="form-select" value={preferences.ethnicityPref}
+                                onChange={(e) => update("ethnicityPref", e.target.value)}>
                             <option value="">No preference</option>
-                            <option>Asian</option>
-                            <option>Black / African American</option>
-                            <option>Hispanic / Latino</option>
-                            <option>Middle Eastern</option>
-                            <option>Native American</option>
-                            <option>Pacific Islander</option>
-                            <option>White / Caucasian</option>
-                            <option>Multiracial</option>
+                            <option>Asian</option><option>Black / African American</option>
+                            <option>Hispanic / Latino</option><option>Middle Eastern</option>
+                            <option>Native American</option><option>Pacific Islander</option>
+                            <option>White / Caucasian</option><option>Multiracial</option>
                         </select>
                     </div>
 
                     <div className="mb-4">
                         <label>Education Preference</label>
-                        <select className="form-select" value={preferences.educationPref} onChange={(e) => update("educationPref", e.target.value)}>
+                        <select className="form-select" value={preferences.educationPref}
+                                onChange={(e) => update("educationPref", e.target.value)}>
                             <option value="">No preference</option>
-                            <option>High School</option>
-                            <option>Some College</option>
-                            <option>Associate's Degree</option>
-                            <option>Bachelor's Degree</option>
-                            <option>Master's Degree</option>
-                            <option>Doctorate / PhD</option>
+                            <option>High School</option><option>Some College</option>
+                            <option>Associate's Degree</option><option>Bachelor's Degree</option>
+                            <option>Master's Degree</option><option>Doctorate / PhD</option>
                             <option>Trade</option>
                         </select>
                     </div>
@@ -219,14 +186,11 @@ function Preferences() {
 
                     <div className="mb-4">
                         <label>Political Preference</label>
-                        <select className="form-select" value={preferences.politicalPref} onChange={(e) => update("politicalPref", e.target.value)}>
+                        <select className="form-select" value={preferences.politicalPref}
+                                onChange={(e) => update("politicalPref", e.target.value)}>
                             <option value="">No preference</option>
-                            <option>Very Liberal</option>
-                            <option>Liberal</option>
-                            <option>Moderate</option>
-                            <option>Conservative</option>
-                            <option>Very Conservative</option>
-                            <option>Apolitical</option>
+                            <option>Very Liberal</option><option>Liberal</option><option>Moderate</option>
+                            <option>Conservative</option><option>Very Conservative</option><option>Apolitical</option>
                         </select>
                     </div>
 

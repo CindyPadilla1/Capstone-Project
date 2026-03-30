@@ -23,14 +23,13 @@ function Questionnaire() {
     const navigate = useNavigate();
     const { profile, setProfile } = useUser();
     const update = (field, value) => setProfile((prev) => ({ ...prev, [field]: value }));
+    const [error, setError] = useState("");
 
     const inchesToDisplay = (inches) => {
         const ft   = Math.floor(inches / 12);
         const inch = inches % 12;
         return `${ft}'${inch}"`;
     };
-
-    const [error, setError] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -88,7 +87,7 @@ function Questionnaire() {
                 <h2 className="fs-6 text-white">Help us get to know you better.</h2>
             </div>
 
-            <div className="login-card p-4 text-start mb-4" style={{ width: "90%", maxWidth: "500px" }}>
+            <div className="login-card form-card p-4 text-start mb-4">
                 <form onSubmit={handleSubmit}>
 
                     <h5 className="section-title">Identity &amp; Background</h5>
@@ -105,17 +104,10 @@ function Questionnaire() {
                                 onChange={(e) => update("religion", e.target.value)}>
                             <option value="">Select...</option>
                             <option>No preference</option>
-                            <option>Atheist</option>
-                            <option>Agnostic</option>
-                            <option>Buddhist</option>
-                            <option>Catholic</option>
-                            <option>Christian</option>
-                            <option>Hindu</option>
-                            <option>Jewish</option>
-                            <option>Mormon</option>
-                            <option>Muslim</option>
-                            <option>Spiritual (non-religious)</option>
-                            <option>Other</option>
+                            <option>Atheist</option><option>Agnostic</option><option>Buddhist</option>
+                            <option>Catholic</option><option>Christian</option><option>Hindu</option>
+                            <option>Jewish</option><option>Mormon</option><option>Muslim</option>
+                            <option>Spiritual (non-religious)</option><option>Other</option>
                             <option>Prefer not to say</option>
                         </select>
                     </div>
@@ -126,16 +118,11 @@ function Questionnaire() {
                                 onChange={(e) => update("ethnicity", e.target.value)}>
                             <option value="">Select...</option>
                             <option>No preference</option>
-                            <option>Asian</option>
-                            <option>Black / African American</option>
-                            <option>Hispanic / Latino</option>
-                            <option>Middle Eastern</option>
-                            <option>Native American</option>
-                            <option>Pacific Islander</option>
-                            <option>White / Caucasian</option>
-                            <option>Multiracial</option>
-                            <option>Other</option>
-                            <option>Prefer not to say</option>
+                            <option>Asian</option><option>Black / African American</option>
+                            <option>Hispanic / Latino</option><option>Middle Eastern</option>
+                            <option>Native American</option><option>Pacific Islander</option>
+                            <option>White / Caucasian</option><option>Multiracial</option>
+                            <option>Other</option><option>Prefer not to say</option>
                         </select>
                     </div>
 
@@ -145,14 +132,10 @@ function Questionnaire() {
                                 onChange={(e) => update("education", e.target.value)}>
                             <option value="">Select...</option>
                             <option>No preference</option>
-                            <option>High School</option>
-                            <option>Some College</option>
-                            <option>Associate's Degree</option>
-                            <option>Bachelor's Degree</option>
-                            <option>Master's Degree</option>
-                            <option>Doctorate / PhD</option>
-                            <option>Trade / Vocational</option>
-                            <option>Other</option>
+                            <option>High School</option><option>Some College</option>
+                            <option>Associate's Degree</option><option>Bachelor's Degree</option>
+                            <option>Master's Degree</option><option>Doctorate / PhD</option>
+                            <option>Trade / Vocational</option><option>Other</option>
                         </select>
                     </div>
 
@@ -208,17 +191,10 @@ function Questionnaire() {
                         <select className="form-select" value={profile.musicPref}
                                 onChange={(e) => update("musicPref", e.target.value)}>
                             <option value="">Select...</option>
-                            <option>Pop</option>
-                            <option>Hip-Hop / Rap</option>
-                            <option>R&amp;B / Soul</option>
-                            <option>Rock</option>
-                            <option>Country</option>
-                            <option>Electronic / EDM</option>
-                            <option>Jazz / Blues</option>
-                            <option>Classical</option>
-                            <option>Latin</option>
-                            <option>Everything</option>
-                            <option>Other</option>
+                            <option>Pop</option><option>Hip-Hop / Rap</option><option>R&amp;B / Soul</option>
+                            <option>Rock</option><option>Country</option><option>Electronic / EDM</option>
+                            <option>Jazz / Blues</option><option>Classical</option><option>Latin</option>
+                            <option>Everything</option><option>Other</option>
                         </select>
                     </div>
 
@@ -245,11 +221,8 @@ function Questionnaire() {
                         <select className="form-select" value={profile.pets}
                                 onChange={(e) => update("pets", e.target.value)}>
                             <option value="">Select...</option>
-                            <option>Love animals</option>
-                            <option>Have pets</option>
-                            <option>Allergic</option>
-                            <option>Not a fan</option>
-                            <option>Neutral</option>
+                            <option>Love animals</option><option>Have pets</option>
+                            <option>Allergic</option><option>Not a fan</option><option>Neutral</option>
                         </select>
                     </div>
 
@@ -264,8 +237,7 @@ function Questionnaire() {
                     <div className="mb-3">
                         <label>Dating Goals <span className="text-danger">*</span></label>
                         <ToggleGroup options={["No preference", "Casual", "Serious", "Long-term"]}
-                                     value={profile.datingGoal}
-                                     onChange={(v) => update("datingGoal", v)} />
+                                     value={profile.datingGoal} onChange={(v) => update("datingGoal", v)} />
                     </div>
 
                     <div className="mb-3">
@@ -274,13 +246,9 @@ function Questionnaire() {
                                 onChange={(e) => update("politicalStanding", e.target.value)}>
                             <option value="">Select...</option>
                             <option>No preference</option>
-                            <option>Very Liberal</option>
-                            <option>Liberal</option>
-                            <option>Moderate</option>
-                            <option>Conservative</option>
-                            <option>Very Conservative</option>
-                            <option>Apolitical</option>
-                            <option>Prefer not to say</option>
+                            <option>Very Liberal</option><option>Liberal</option><option>Moderate</option>
+                            <option>Conservative</option><option>Very Conservative</option>
+                            <option>Apolitical</option><option>Prefer not to say</option>
                         </select>
                     </div>
 
@@ -288,16 +256,14 @@ function Questionnaire() {
                         <label>Bio (optional)</label>
                         <textarea className="form-control" rows={3}
                                   placeholder="Tell us more about yourself..."
-                                  value={profile.bio}
-                                  onChange={(e) => update("bio", e.target.value)} />
+                                  value={profile.bio} onChange={(e) => update("bio", e.target.value)} />
                     </div>
 
                     <div className="mb-3">
                         <label>Do you have or want children?</label>
                         <ToggleGroup
                             options={["No preference", "Want kids", "Have kids", "Don't want kids", "Open"]}
-                            value={profile.children}
-                            onChange={(v) => update("children", v)} />
+                            value={profile.children} onChange={(v) => update("children", v)} />
                     </div>
 
                     <div className="mb-4">
@@ -319,7 +285,6 @@ function Questionnaire() {
                             Next: Partner Preferences →
                         </button>
                     </div>
-
                 </form>
             </div>
         </div>

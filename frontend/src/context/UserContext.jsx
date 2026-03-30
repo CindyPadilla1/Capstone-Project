@@ -83,7 +83,6 @@ export function UserProvider({ children }) {
         localStorage.setItem("rejectedIds", JSON.stringify(rejectedIds));
     }, [rejectedIds]);
 
-    // ── Load profile from /auth/me ─────────────────────────────────────────
     const loadUserProfile = async (jwt) => {
         try {
             const res = await fetch(`${API}/auth/me`, {
@@ -131,7 +130,6 @@ export function UserProvider({ children }) {
         }
     };
 
-    // ── Load preferences from /profile/preferences ─────────────────────────
     const loadPreferences = async (jwt) => {
         try {
             const res = await fetch(`${API}/profile/preferences`, {
@@ -144,14 +142,14 @@ export function UserProvider({ children }) {
             const p = data.preferences;
             setPreferences((prev) => ({
                 ...prev,
-                genderPref:    p.genderPref    || "",
-                minAge:        p.minAge        || 18,
-                maxAge:        p.maxAge        || 100,
-                minHeight:     p.minHeight     || 60,
-                maxHeight:     p.maxHeight     || 80,
+                genderPref:     p.genderPref     || "",
+                minAge:         p.minAge         || 18,
+                maxAge:         p.maxAge         || 100,
+                minHeight:      p.minHeight      || 60,
+                maxHeight:      p.maxHeight      || 80,
                 datingGoalPref: p.datingGoalPref || "",
-                childrenPref:  p.childrenPref  || "",
-                politicalPref: p.politicalPref || "",
+                childrenPref:   p.childrenPref   || "",
+                politicalPref:  p.politicalPref  || "",
             }));
         } catch (err) {
             console.error("Failed to load preferences:", err);
