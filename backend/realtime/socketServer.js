@@ -3,6 +3,7 @@
 // Each match gets its own room: "match_{matchId}"
 
 const { verifyToken } = require("../utils/jwtHelper");
+const evaluate        = require("../safety/safetyEngine"); // Feature 3
 
 module.exports = function initSocket(io) {
 
@@ -68,6 +69,21 @@ module.exports = function initSocket(io) {
                     return;
                 }
 
+                // ── Feature 3: Safety interception (pre-send) ─────────────
+                const decision = await evaluate(match_id, socket.userId, content.trim());
+
+                if (decision.action === 'block') {
+                    socket.emit("message_blocked", {
+                        blocked:  true,
+                        reason:   decision.reason,
+                        cooldown: decision.cooldown
+                    });
+                    return;
+                }
+
+                const safetyPrompt = decision.action === 'prompt' ? decision.reason : null;
+                // ──────────────────────────────────────────────────────────
+
                 const result = await pool.query(
                     `INSERT INTO message (match_id, sender_id, content, sent_at)
                      VALUES ($1, $2, $3, NOW())
@@ -75,8 +91,15 @@ module.exports = function initSocket(io) {
                     [match_id, socket.userId, content.trim()]
                 );
 
-                // Broadcast to everyone in the match room
-                io.to(`match_${match_id}`).emit("new_message", result.rows[0]);
+                const savedMessage = result.rows[0];
+
+                // Broadcast message to everyone in the match room
+                io.to(`match_${match_id}`).emit("new_message", savedMessage);
+
+                // Send safety prompt back to sender only (if warning level)
+                if (safetyPrompt) {
+                    socket.emit("safety_prompt", { reason: safetyPrompt });
+                }
 
             } catch (err) {
                 console.error("socket send_message error:", err.message);

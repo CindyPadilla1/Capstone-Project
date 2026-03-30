@@ -2,7 +2,8 @@
 // POST /messages/send        — send a message in a match
 // GET  /messages/:matchId    — load message history for a chat
 
-const pool = require("../config/db");
+const pool         = require("../config/db");
+const evaluate     = require("../safety/safetyEngine"); // Feature 3
 
 // ─── POST /messages/send ───────────────────────────────────────────────────
 exports.sendMessage = async (req, res) => {
@@ -37,6 +38,20 @@ exports.sendMessage = async (req, res) => {
             return res.status(403).json({ error: "You are not part of this match." });
         }
 
+        // ── Feature 3: Safety interception (pre-send) ─────────────────────
+        const decision = await evaluate(match_id, sender_id, content.trim());
+
+        if (decision.action === 'block') {
+            return res.status(403).json({
+                blocked:  true,
+                reason:   decision.reason,
+                cooldown: decision.cooldown
+            });
+        }
+
+        const safetyPrompt = decision.action === 'prompt' ? decision.reason : null;
+        // ──────────────────────────────────────────────────────────────────
+
         const result = await pool.query(
             `INSERT INTO message (match_id, sender_id, content, sent_at)
              VALUES ($1, $2, $3, NOW())
@@ -52,7 +67,11 @@ exports.sendMessage = async (req, res) => {
             io.to(`match_${match_id}`).emit("new_message", savedMessage);
         }
 
-        res.status(201).json({ message: "Message sent.", data: savedMessage });
+        res.status(201).json({
+            message:       "Message sent.",
+            safety_prompt: safetyPrompt, // null if normal, string if warning
+            data:          savedMessage
+        });
     } catch (err) {
         console.error("sendMessage error:", err.message);
         res.status(500).json({ error: "Failed to send message." });
