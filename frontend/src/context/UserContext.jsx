@@ -99,7 +99,11 @@ export function UserProvider({ children }) {
                 dob:               u.date_of_birth         || "",
                 bio:               u.bio                   || "",
                 height:            u.height_inches         || 68,
-                profilePic:        u.profile_photo_url     || null,
+                profilePic:        u.profile_photo_url
+                    ? (u.profile_photo_url.startsWith("http")
+                        ? u.profile_photo_url
+                        : `${API}${u.profile_photo_url}`)
+                    : null,
                 gender:            mapGender(u.gender_name),
                 religion:          u.religion_name         || "",
                 ethnicity:         u.ethnicity_name        || "",
@@ -112,13 +116,43 @@ export function UserProvider({ children }) {
                 musicPref:         u.music_name            || "",
                 personality:       u.personality_type_name || "",
                 datingGoal:        u.dating_goal_name      || "",
-                politicalStanding: u.political_affil       || "",
-                children:          u.want_children         || "",
-                astrology:         u.astrology_sign        || "",
+                politicalStanding: u.political_name        || "",
+                children:          u.children_name         || "",
+                astrology:         u.astrology_name        || "",
                 familyOriented:    u.family_oriented_name  || "",
+                gamer:             u.isgamer_name          || "",
+                reader:            u.isreader_name         || "",
+                travel:            u.travel_interest_name  || "",
+                pets:              u.pet_interest_name     || "",
             }));
         } catch (err) {
             console.error("Failed to load user profile:", err);
+        }
+    };
+
+    const loadPreferences = async (jwt) => {
+        try {
+            const res = await fetch(`${API}/profile/preferences`, {
+                headers: { Authorization: `Bearer ${jwt}` }
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data.preferences) return;
+
+            const p = data.preferences;
+            setPreferences((prev) => ({
+                ...prev,
+                genderPref:     p.genderPref     || "",
+                minAge:         p.minAge         || 18,
+                maxAge:         p.maxAge         || 100,
+                minHeight:      p.minHeight      || 60,
+                maxHeight:      p.maxHeight      || 80,
+                datingGoalPref: p.datingGoalPref || "",
+                childrenPref:   p.childrenPref   || "",
+                politicalPref:  p.politicalPref  || "",
+            }));
+        } catch (err) {
+            console.error("Failed to load preferences:", err);
         }
     };
 
@@ -128,6 +162,7 @@ export function UserProvider({ children }) {
         setCurrentUser(userData);
         setToken(jwtToken);
         loadUserProfile(jwtToken);
+        loadPreferences(jwtToken);
     };
 
     const logout = () => {
@@ -156,6 +191,7 @@ export function UserProvider({ children }) {
         if (!currentUser || !token) return;
 
         loadUserProfile(token);
+        loadPreferences(token);
 
         const fetchAll = async () => {
             setMatchesLoading(true);
@@ -171,7 +207,7 @@ export function UserProvider({ children }) {
                     return;
                 }
 
-                const stored = JSON.parse(localStorage.getItem("rejectedIds") || "[]");
+                const stored   = JSON.parse(localStorage.getItem("rejectedIds") || "[]");
                 const filtered = (data.matches || []).filter(m => !stored.includes(m.user_id));
                 setMatches(filtered);
 
@@ -188,7 +224,6 @@ export function UserProvider({ children }) {
                         });
                     }
                 }
-
             } catch {
                 setMatchesError("Could not connect to server.");
             } finally {

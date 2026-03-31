@@ -69,7 +69,10 @@ const USER_JOINS = `
 
 async function getUserById(userId) {
     const userResult = await pool.query(
-        `SELECT ${USER_SELECT} FROM users u ${USER_JOINS} WHERE u.user_id = $1`,
+        `SELECT DISTINCT ON (u.user_id) ${USER_SELECT}
+         FROM users u ${USER_JOINS}
+         WHERE u.user_id = $1
+         ORDER BY u.user_id`,
         [userId]
     );
     if (userResult.rows.length === 0) return null;
@@ -114,8 +117,10 @@ async function getUserById(userId) {
 
 async function getCandidates(excludeUserId) {
     const result = await pool.query(
-        `SELECT ${USER_SELECT} FROM users u ${USER_JOINS}
-         WHERE u.user_id != $1 AND u.account_status = 'active'`,
+        `SELECT DISTINCT ON (u.user_id) ${USER_SELECT}
+         FROM users u ${USER_JOINS}
+         WHERE u.user_id != $1 AND u.account_status = 'active'
+         ORDER BY u.user_id`,
         [excludeUserId]
     );
     return result.rows;
