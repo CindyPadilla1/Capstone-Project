@@ -1,9 +1,9 @@
 require("dotenv").config();
 require("./config/db");
 
-const express    = require("express");
-const http       = require("http");
-const cors       = require("cors");
+const express = require("express");
+const http    = require("http");
+const cors    = require("cors");
 
 const app    = express();
 const server = http.createServer(app);
@@ -37,5 +37,6 @@ app.get("/health", (req, res) => {
 });
 
 server.listen(PORT, () => {
-    console.log(`Aura backend running on port ${PORT}`);
+    console.log(`✅ Aura backend running on port ${PORT}`);
+    console.log(`✅ Socket.io initialized on the same port`);
 });
