@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="dataSourceStorageLocal" created-in="WS-252.28539.21">
-    <data-source name="railway@crossover.proxy.rlwy.net" uuid="251b43d2-225f-4e95-a119-831980af3be2">
+    <data-source name="railway@crossover.proxy.rlwy.net" uuid="ee8fd621-a8b4-4d13-9fd9-ada4b5c268f4">
       <database-info product="PostgreSQL" version="17.7 (Debian 17.7-3.pgdg13+1)" jdbc-version="4.2" driver-name="PostgreSQL JDBC Driver" driver-version="42.7.3" dbms="POSTGRES" exact-version="17.7" exact-driver-version="42.7">
         <identifier-quote-string>&quot;</identifier-quote-string>
       </database-info>
       <case-sensitivity plain-identifiers="lower" quoted-identifiers="exact" />
       <secret-storage>master_key</secret-storage>
-      <auth-provider>no-auth</auth-provider>
       <user-name>postgres</user-name>
       <schema-mapping>
         <introspection-scope>
@@ -16,10 +15,6 @@
           </node>
         </introspection-scope>
       </schema-mapping>
-      <ssl-config use-ide-store="true" use-java-store="true" use-system-store="true">
-        <enabled>true</enabled>
-        <mode>REQUIRE</mode>
-      </ssl-config>
     </data-source>
   </component>
 </project>
