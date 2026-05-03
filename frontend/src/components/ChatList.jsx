@@ -20,7 +20,6 @@ function ChatList({ matches, loading, onSelect }) {
             </div>
         );
     }
-
     return (
         <div className="chat-inbox-card">
             <div className="chat-inbox-head">
@@ -61,5 +60,4 @@ function ChatList({ matches, loading, onSelect }) {
         </div>
     );
 }
-
 export default ChatList;

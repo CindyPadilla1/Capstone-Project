@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useUser } from "../context/UserContext";
 import { API_BASE_URL } from "../config/api";
-
 function formatMsgTime(iso) {
     if (!iso) return "";
     try {
@@ -14,7 +13,6 @@ function formatMsgTime(iso) {
         return "";
     }
 }
-
 function formatCooldownLine(endMs) {
     const remainingMs = Math.max(0, endMs - Date.now());
     const totalSeconds = Math.floor(remainingMs / 1000);
@@ -25,7 +23,6 @@ function formatCooldownLine(endMs) {
     }
     return `Please wait ${seconds} seconds before sending another message.`;
 }
-
 function ChatWindow({ match, onBack }) {
     const navigate = useNavigate();
     const { currentUser, token } = useUser();
@@ -50,7 +47,6 @@ function ChatWindow({ match, onBack }) {
     useEffect(() => {
         inputValueRef.current = input;
     }, [input]);
-
     const matchIdNum = match?.match_id != null ? Number(match.match_id) : null;
     const isOwnEvent = (eventSenderId) =>
         eventSenderId == null || Number(eventSenderId) === Number(myUserIdRef.current);
@@ -58,7 +54,6 @@ function ChatWindow({ match, onBack }) {
     const clearBanner = () => {
         setBanner(null);
     };
-
     const parseBannerReason = (reasonText) => {
         const fullText = typeof reasonText === "string" ? reasonText.trim() : "";
         if (!fullText) return { reason: "", cooldown: "" };
@@ -68,7 +63,6 @@ function ChatWindow({ match, onBack }) {
         const reason = fullText.slice(0, cooldownMatch.index).trim();
         return { reason, cooldown };
     };
-
     const showBanner = (type, reasonText, cooldownUntilIso) => {
         const { reason, cooldown } = parseBannerReason(reasonText);
         clearBanner();
@@ -88,7 +82,6 @@ function ChatWindow({ match, onBack }) {
             setBanner((prev) => (prev ? { ...prev, visible: true } : null));
         });
     };
-
     const triggerBlockInputFeedback = () => {
         setInputShake(true);
         setInputBlockedBorder(true);
@@ -103,7 +96,6 @@ function ChatWindow({ match, onBack }) {
             borderTimerRef.current = null;
         }, 2000);
     };
-
     useEffect(() => {
         if (matchIdNum == null || Number.isNaN(matchIdNum) || !token) return;
 
@@ -128,9 +120,7 @@ function ChatWindow({ match, onBack }) {
 
         const socket = io(API_BASE_URL, { auth: { token } });
         socketRef.current = socket;
-
         socket.emit("join_match", { match_id: matchIdNum });
-
         socket.on("new_message", (msg) => {
             setIsTyping(false);
             const myId = Number(myUserIdRef.current);
@@ -152,26 +142,22 @@ function ChatWindow({ match, onBack }) {
                 },
             ]);
         });
-
         socket.on("message_blocked", ({ reason, sender_id, cooldown_until }) => {
             if (!isOwnEvent(sender_id)) return;
             showBanner("block", reason, cooldown_until);
             setInput((prev) => prev || lastAttemptedTextRef.current);
             triggerBlockInputFeedback();
         });
-
         socket.on("safety_prompt", ({ reason, sender_id }) => {
             if (!isOwnEvent(sender_id)) return;
             showBanner("warn", reason);
         });
-
         socket.on("user_typing", () => setIsTyping(true));
         socket.on("user_stop_typing", () => setIsTyping(false));
 
         socket.on("connect_error", (err) => {
             console.error("[chat socket]", err?.message || err);
         });
-
         return () => {
             if (borderTimerRef.current) clearTimeout(borderTimerRef.current);
             if (shakeTimerRef.current) clearTimeout(shakeTimerRef.current);
@@ -208,7 +194,6 @@ function ChatWindow({ match, onBack }) {
             setInput("");
         });
     };
-
     const handleKeyDown = (e) => {
         if (e.key === "Enter") {
             handleSend();
@@ -221,11 +206,9 @@ function ChatWindow({ match, onBack }) {
             socketRef.current?.emit("stop_typing", { match_id: matchIdNum });
         }, 1500);
     };
-
     const handleRequestDate = () => {
         navigate("/dates", { state: { match, returnTo: "/chat" } });
     };
-
     return (
         <div className="chat-app">
             <header className="chat-app-header">
@@ -304,7 +287,6 @@ function ChatWindow({ match, onBack }) {
                             onClick={clearBanner}
                             aria-label="Dismiss warning"
                         >
-                            ×
                         </button>
                     </div>
                     {banner.type === "block" && (banner.cooldownEndsAt != null || banner.cooldown) && (
@@ -341,5 +323,4 @@ function ChatWindow({ match, onBack }) {
         </div>
     );
 }
-
 export default ChatWindow;

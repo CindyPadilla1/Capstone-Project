@@ -1,12 +1,10 @@
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
-
 const filterMatches = require("../matching/filterMatches");
 const rankMatches = require("../matching/rankMatches");
 const scoreMatch = require("../matching/scoreMatch");
 const { milesBetween } = require("../utils/geoDistance");
 const { parseCityStateLocation } = require("../utils/parseCityStateLocation");
-
 function basePrefs(overrides = {}) {
     return {
         preferred_age_min: 18,
@@ -31,7 +29,6 @@ function basePrefs(overrides = {}) {
         ...overrides,
     };
 }
-
 function baseUser(overrides = {}) {
     return {
         user_id: 1,
@@ -43,7 +40,6 @@ function baseUser(overrides = {}) {
         ...overrides,
     };
 }
-
 function baseCandidate(overrides = {}) {
     return {
         user_id: 2,
@@ -76,7 +72,6 @@ function baseCandidate(overrides = {}) {
         ...overrides,
     };
 }
-
 function fullScoreFields() {
     return {
         religion_id: 6,
@@ -98,7 +93,6 @@ function fullScoreFields() {
         personality_type: 3,
     };
 }
-
 describe("feature1 filterMatches mutual gender", () => {
     test("man seeking non-binary and nb seeking man passes mutual gender", () => {
         const user = baseUser({
@@ -112,27 +106,23 @@ describe("feature1 filterMatches mutual gender", () => {
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
 });
-
 describe("feature1 filterMatches trust elimination", () => {
     test("trust 40 excluded", () => {
         const user = baseUser();
         const cand = baseCandidate({ trust_score: 40 });
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
-
     test("trust below 40 excluded", () => {
         const user = baseUser();
         const cand = baseCandidate({ trust_score: 25 });
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
-
     test("trust 41 included with other constraints ok", () => {
         const user = baseUser();
         const cand = baseCandidate({ trust_score: 41 });
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
 });
-
 describe("feature1 rankMatches trust penalty", () => {
     test("trust 55 penalized minus 15", () => {
         const user = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
@@ -142,7 +132,6 @@ describe("feature1 rankMatches trust penalty", () => {
         assert.equal(ranked[0].trust_penalized, true);
         assert.equal(ranked[0].score, Math.max(0, raw - 15));
     });
-
     test("trust 56 not penalized", () => {
         const user = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
         const cand = { user_id: 4, trust_score: 56, gender_identity: 3, ...fullScoreFields() };
@@ -151,7 +140,6 @@ describe("feature1 rankMatches trust penalty", () => {
         assert.equal(ranked[0].trust_penalized, false);
         assert.equal(ranked[0].score, raw);
     });
-
     test("trust 61 not penalized", () => {
         const user = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
         const cand = { user_id: 4, trust_score: 61, gender_identity: 3, ...fullScoreFields() };
@@ -161,7 +149,6 @@ describe("feature1 rankMatches trust penalty", () => {
         assert.equal(ranked[0].score, raw);
     });
 });
-
 describe("feature1 filterMatches age", () => {
     test("candidate exactly at min age included", () => {
         const today = new Date();
@@ -173,7 +160,6 @@ describe("feature1 filterMatches age", () => {
         const cand = baseCandidate({ date_of_birth: iso });
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
-
     test("candidate one year under min excluded", () => {
         const today = new Date();
         const dob = new Date(today.getFullYear() - 24, today.getMonth(), today.getDate());
@@ -184,7 +170,6 @@ describe("feature1 filterMatches age", () => {
         const cand = baseCandidate({ date_of_birth: iso });
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
-
     test("candidate exactly at max age included", () => {
         const today = new Date();
         const dob = new Date(today.getFullYear() - 40, today.getMonth(), today.getDate());
@@ -195,7 +180,6 @@ describe("feature1 filterMatches age", () => {
         const cand = baseCandidate({ date_of_birth: iso });
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
-
     test("candidate one year over max excluded", () => {
         const today = new Date();
         const dob = new Date(today.getFullYear() - 41, today.getMonth(), today.getDate());
@@ -207,7 +191,6 @@ describe("feature1 filterMatches age", () => {
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
 });
-
 describe("feature1 filterMatches height", () => {
     test("candidate exactly at min height included", () => {
         const user = baseUser({
@@ -216,7 +199,6 @@ describe("feature1 filterMatches height", () => {
         const cand = baseCandidate({ height_inches: 60 });
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
-
     test("candidate one inch under min excluded", () => {
         const user = baseUser({
             preferences: basePrefs({ preferred_height_min: 60, preferred_height_max: 80 }),
@@ -224,7 +206,6 @@ describe("feature1 filterMatches height", () => {
         const cand = baseCandidate({ height_inches: 59 });
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
-
     test("candidate exactly at max height included", () => {
         const user = baseUser({
             preferences: basePrefs({ preferred_height_min: 60, preferred_height_max: 72 }),
@@ -232,7 +213,6 @@ describe("feature1 filterMatches height", () => {
         const cand = baseCandidate({ height_inches: 72 });
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
-
     test("candidate one inch over max excluded", () => {
         const user = baseUser({
             preferences: basePrefs({ preferred_height_min: 60, preferred_height_max: 72 }),
@@ -240,7 +220,6 @@ describe("feature1 filterMatches height", () => {
         const cand = baseCandidate({ height_inches: 73 });
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
-
     test("null candidate height skips height filter", () => {
         const user = baseUser({
             preferences: basePrefs({ preferred_height_min: 60, preferred_height_max: 72 }),
@@ -249,13 +228,11 @@ describe("feature1 filterMatches height", () => {
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
 });
-
 describe("feature1 filterMatches distance", () => {
     const lat = 41.878113;
     const lon = -87.629799;
     const lonInside = -87.436;
     const lonOutside = -87.43;
-
     test("within max distance included", () => {
         const d = milesBetween(lat, lon, lat, lonInside);
         assert.ok(d <= 10);
@@ -270,7 +247,6 @@ describe("feature1 filterMatches distance", () => {
         });
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
-
     test("beyond max distance excluded", () => {
         const d = milesBetween(lat, lon, lat, lonOutside);
         assert.ok(d > 10);
@@ -285,7 +261,6 @@ describe("feature1 filterMatches distance", () => {
         });
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
-
     test("null coordinates skip distance constraint", () => {
         const user = baseUser({
             latitude: null,
@@ -299,7 +274,6 @@ describe("feature1 filterMatches distance", () => {
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
 });
-
 describe("feature1 scoreMatch dating goals and children", () => {
     test("same dating goals scores higher than long-term vs casual", () => {
         const base = { ...fullScoreFields(), gender_identity: 2 };
@@ -310,7 +284,6 @@ describe("feature1 scoreMatch dating goals and children", () => {
         const sMixed = scoreMatch(a, bCasual).totalScore;
         assert.ok(sSame > sMixed);
     });
-
     test("long-term vs serious lowers values dimension vs identical", () => {
         const base = { ...fullScoreFields(), gender_identity: 2 };
         const viewer = { ...base, user_id: 1, dating_goals: 3 };
@@ -318,7 +291,6 @@ describe("feature1 scoreMatch dating goals and children", () => {
         const twin = { ...base, user_id: 3, dating_goals: 3 };
         assert.ok(scoreMatch(viewer, twin).totalScore > scoreMatch(viewer, serious).totalScore);
     });
-
     test("same children scores higher than different children ids", () => {
         const base = { ...fullScoreFields(), gender_identity: 2, dating_goals: 3 };
         const a = { ...base, user_id: 1, children: 1 };
@@ -327,7 +299,6 @@ describe("feature1 scoreMatch dating goals and children", () => {
         assert.ok(scoreMatch(a, bSame).totalScore > scoreMatch(a, bDiff).totalScore);
     });
 });
-
 describe("feature1 filter soft prefs religion ethnicity political", () => {
     test("strict religion pref on user does not remove candidate from deck", () => {
         const user = baseUser({
@@ -340,7 +311,6 @@ describe("feature1 filter soft prefs religion ethnicity political", () => {
         const cand = baseCandidate({ religion_id: 6 });
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
-
     test("no preference religion label still includes mismatched religion", () => {
         const user = baseUser({
             preferences: basePrefs({
@@ -352,7 +322,6 @@ describe("feature1 filter soft prefs religion ethnicity political", () => {
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
 });
-
 describe("feature1 scoreMatch breakdown", () => {
     test("breakdown has interests lifestyle personality values weights reasons", () => {
         const a = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
@@ -367,14 +336,12 @@ describe("feature1 scoreMatch breakdown", () => {
         assert.ok(Array.isArray(r.breakdown.reasons));
     });
 });
-
 describe("feature1 filterMatches account and self", () => {
     test("suspended inactive user excluded", () => {
         const user = baseUser();
         const cand = baseCandidate({ account_status: "suspended" });
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
-
     test("viewer never matches own user_id in candidate list", () => {
         const user = baseUser({ user_id: 42, gender_identity: 2, preferences: basePrefs({ preferred_genders: [2] }) });
         const cand = baseCandidate({
@@ -385,7 +352,6 @@ describe("feature1 filterMatches account and self", () => {
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
 });
-
 describe("feature1 filterMatches no preferences", () => {
     test("user with null preferences passes deck except trust gender active", () => {
         const user = baseUser({ preferences: null });
@@ -393,7 +359,6 @@ describe("feature1 filterMatches no preferences", () => {
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
 });
-
 describe("feature1 scoreMatch reasons density", () => {
     test("single overlapping trait yields at least one reason when ids align", () => {
         const a = {
@@ -421,7 +386,6 @@ describe("feature1 scoreMatch reasons density", () => {
         const r = scoreMatch(a, b);
         assert.ok(r.breakdown.reasons.includes("Shared faith"));
     });
-
     test("identical profiles yield many reasons", () => {
         const a = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
         const b = { user_id: 2, gender_identity: 3, ...fullScoreFields() };
@@ -429,7 +393,6 @@ describe("feature1 scoreMatch reasons density", () => {
         assert.ok(r.breakdown.reasons.length >= 8);
     });
 });
-
 describe("feature1 rankMatches visibility penalty", () => {
     test("visibility_rank_penalty reduces score", () => {
         const user = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
@@ -446,7 +409,6 @@ describe("feature1 rankMatches visibility penalty", () => {
         assert.equal(ranked[0].score, Math.max(0, raw - 10));
     });
 });
-
 describe("feature1 rankMatches tie ordering", () => {
     test("equal scores preserve candidate input order", () => {
         const user = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
@@ -459,7 +421,6 @@ describe("feature1 rankMatches tie ordering", () => {
         assert.deepEqual(r2, [11, 10]);
     });
 });
-
 describe("feature1 parseCityStateLocation", () => {
     test("Chicago IL valid", () => {
         const p = parseCityStateLocation("Chicago, IL");
@@ -467,42 +428,35 @@ describe("feature1 parseCityStateLocation", () => {
         assert.equal(p.city, "Chicago");
         assert.equal(p.state, "IL");
     });
-
     test("Chicago alone invalid", () => {
         const p = parseCityStateLocation("Chicago");
         assert.equal(p.ok, false);
     });
-
     test("IL alone invalid", () => {
         const p = parseCityStateLocation("IL");
         assert.equal(p.ok, false);
     });
-
     test("chicago il valid", () => {
         const p = parseCityStateLocation("chicago, il");
         assert.equal(p.ok, true);
         assert.equal(p.city, "chicago");
         assert.equal(p.state, "il");
     });
-
     test("New York NY valid", () => {
         const p = parseCityStateLocation("New York, NY");
         assert.equal(p.ok, true);
         assert.equal(p.city, "New York");
         assert.equal(p.state, "NY");
     });
-
     test("empty invalid", () => {
         const p = parseCityStateLocation("");
         assert.equal(p.ok, false);
     });
-
     test("123 IL invalid", () => {
         const p = parseCityStateLocation("123, IL");
         assert.equal(p.ok, false);
     });
 });
-
 describe("feature1 geocodeCityState fetch mock", () => {
     test("HTTP error returns null without throwing", async () => {
         const orig = global.fetch;
@@ -515,30 +469,25 @@ describe("feature1 geocodeCityState fetch mock", () => {
         delete require.cache[require.resolve("../services/geocodeCityState")];
     });
 });
-
 function chatInboxPreview(match) {
     return match.last_message && String(match.last_message).trim()
         ? match.last_message
         : `You matched with ${match.name} — say hello!`;
 }
-
 describe("feature1 messaging inbox preview contract", () => {
     test("empty last_message yields say hello prompt", () => {
         const s = chatInboxPreview({ name: "Alex Rivera", last_message: "" });
         assert.equal(s, "You matched with Alex Rivera — say hello!");
     });
-
     test("whitespace last_message yields say hello prompt", () => {
         const s = chatInboxPreview({ name: "Sam", last_message: "   " });
         assert.equal(s, "You matched with Sam — say hello!");
     });
-
     test("non-empty last_message shows text", () => {
         const s = chatInboxPreview({ name: "Sam", last_message: "hey there" });
         assert.equal(s, "hey there");
     });
 });
-
 describe("feature1 overlay response contract", () => {
     test("mutual like payload uses match_created not isMatch", () => {
         const body = { match_created: true, match_id: 9 };
@@ -546,7 +495,6 @@ describe("feature1 overlay response contract", () => {
         assert.ok(!Object.prototype.hasOwnProperty.call(body, "isMatch"));
     });
 });
-
 describe("feature1 distance reasons absence", () => {
     test("null lat lng still produces score reasons without proximity in controller merge", () => {
         const a = { user_id: 1, gender_identity: 2, latitude: null, longitude: null, ...fullScoreFields() };

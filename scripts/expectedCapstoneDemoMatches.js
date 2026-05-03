@@ -1,21 +1,11 @@
-/**
- * Offline deck for scripts/seedCapstoneDemoUsers.js roster using backend/matching/filterMatches.js
- * (same hard filters as GET /matches). Does not compute scores — order in app is by rankMatches/scoreMatch.
- *
- *   node scripts/expectedCapstoneDemoMatches.js
- */
 const filterMatches = require("../backend/matching/filterMatches");
-
 const CHI_LAT = 41.878113;
 const CHI_LON = -87.629799;
 const LA_LAT = 34.052235;
 const LA_LON = -118.243683;
 const MKE_LAT = 43.038902;
 const MKE_LON = -87.906474;
-
 const G = { MAN: 2, WOMAN: 3, NB: 4 };
-
-/** @type {Record<string, any>} */
 const USERS = {
     dante: {
         email: "dante@test.com",
@@ -318,9 +308,7 @@ const USERS = {
         },
     },
 };
-
 const ORDER = Object.keys(USERS);
-
 function candidatePoolForViewer(viewerKey) {
     return ORDER.filter((k) => {
         if (k === viewerKey) return false;
@@ -329,11 +317,9 @@ function candidatePoolForViewer(viewerKey) {
         return true;
     }).map((k) => USERS[k]);
 }
-
 function main() {
     console.log("Capstone demo seed — users who pass hard filters (alphabetical).");
     console.log("API sorts by match score (rankMatches). Gender IDs: 2=Man, 3=Woman, 4=Non-binary.\n");
-
     for (const vk of ORDER) {
         const viewer = USERS[vk];
         if (viewer.account_status !== "active") {
@@ -352,5 +338,4 @@ function main() {
         else passed.forEach((c) => console.log(`  • ${c.email}`));
     }
 }
-
 main();

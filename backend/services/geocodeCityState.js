@@ -1,15 +1,12 @@
 const DEFAULT_UA = "AuraCapstone/1.0 (educational; city-level matching)";
-
 function nominatimUrl(city, state) {
     const q = `${city}, ${state}, United States`;
     return `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`;
 }
-
 async function geocodeCityState(city, state) {
     const c = typeof city === "string" ? city.trim() : "";
     const s = typeof state === "string" ? state.trim() : "";
     if (!c || !s) return null;
-
     const url = nominatimUrl(c, s);
     const ua = (process.env.GEOCODING_USER_AGENT || DEFAULT_UA).trim() || DEFAULT_UA;
     const controller = new AbortController();
@@ -37,5 +34,4 @@ async function geocodeCityState(city, state) {
         clearTimeout(timer);
     }
 }
-
 module.exports = { geocodeCityState };

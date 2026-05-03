@@ -5,20 +5,15 @@ import ChatList from "../components/ChatList";
 import ChatWindow from "../components/ChatWindow";
 import { useUser } from "../context/UserContext";
 import { API_BASE_URL } from "../config/api";
-
 function Chat() {
     const { currentUser, token } = useUser();
     const location = useLocation();
-
     const [mutualMatches, setMutualMatches] = useState([]);
     const [loadingMatches, setLoadingMatches] = useState(true);
-
     const [selectedMatch, setSelectedMatch] = useState(location.state?.selectedMatch || null);
     const openMatchId = location.state?.openMatchId != null ? Number(location.state.openMatchId) : null;
-
     useEffect(() => {
         if (!currentUser || !token) return;
-
         fetch(`${API_BASE_URL}/matches/${currentUser.user_id}/mutual`, {
             headers: { Authorization: `Bearer ${token}` },
         })
@@ -29,13 +24,11 @@ function Chat() {
             })
             .catch(() => setLoadingMatches(false));
     }, [currentUser, token]);
-
     useEffect(() => {
         if (selectedMatch || openMatchId == null || Number.isNaN(openMatchId) || mutualMatches.length === 0) return;
         const match = mutualMatches.find((m) => Number(m.match_id) === openMatchId);
         if (match) setSelectedMatch(match);
     }, [selectedMatch, openMatchId, mutualMatches]);
-
     useEffect(() => {
         if (!selectedMatch || !currentUser || !token) return;
         const matchId = Number(selectedMatch.match_id);
@@ -49,7 +42,6 @@ function Chat() {
             body: JSON.stringify({ types: ["new_message"], match_id: matchId }),
         }).catch(() => {});
     }, [selectedMatch, currentUser, token]);
-
     return (
         <>
             <Navbar />
@@ -69,5 +61,4 @@ function Chat() {
         </>
     );
 }
-
 export default Chat;

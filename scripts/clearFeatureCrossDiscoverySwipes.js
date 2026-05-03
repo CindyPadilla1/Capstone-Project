@@ -1,9 +1,7 @@
 const path = require("path");
 const { Client } = require("pg");
-
 require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 require("dotenv").config({ path: path.join(__dirname, "..", "backend", ".env") });
-
 const FEATURE_CROSS_EMAILS = [
     "feature2a@test.com",
     "feature2b@test.com",
@@ -11,7 +9,6 @@ const FEATURE_CROSS_EMAILS = [
     "feature3b@test.com",
     "tyler@test.com",
 ];
-
 async function clearFeatureCrossDiscoverySwipes(client) {
     const { rows } = await client.query(
         `SELECT user_id, email FROM users WHERE email = ANY($1::text[])`,
@@ -45,7 +42,6 @@ async function clearFeatureCrossDiscoverySwipes(client) {
     );
     return del.rowCount;
 }
-
 async function main() {
     const client = new Client({
         host: process.env.DB_HOST,
@@ -68,12 +64,10 @@ async function main() {
         await client.end();
     }
 }
-
 if (require.main === module) {
     main().catch((e) => {
         console.error(e);
         process.exit(1);
     });
 }
-
 module.exports = { clearFeatureCrossDiscoverySwipes, FEATURE_CROSS_EMAILS };

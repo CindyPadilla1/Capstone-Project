@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { API_BASE_URL } from "../config/api";
-
 function Login() {
     const navigate = useNavigate();
     const { login } = useUser();
@@ -10,30 +9,23 @@ function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-
     const handleLogin = async (e) => {
         e.preventDefault();
         if (!email.includes("@")) { setError("Please enter a valid email."); return; }
         if (password.length < 6)  { setError("Password must be at least 6 characters."); return; }
-
         setError("");
         setLoading(true);
-
         try {
             const res = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
-
             const data = await res.json();
-
             if (!res.ok) {
                 setError(data.error || "Login failed. Please try again.");
                 return;
             }
-
-            // Store in context + localStorage
             login(data.user, data.token);
             navigate("/matching");
         } catch (err) {
@@ -42,7 +34,6 @@ function Login() {
             setLoading(false);
         }
     };
-
     return (
         <div className="faded-background d-flex justify-content-center align-items-center min-vh-100">
             <div className="login-card p-4 text-center">
@@ -87,5 +78,4 @@ function Login() {
         </div>
     );
 }
-
 export default Login;

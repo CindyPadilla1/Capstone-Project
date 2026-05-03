@@ -1,20 +1,17 @@
 const pool = require("../config/db");
 const { resolveAppealAutomatically } = require("../services/appealAutoResolve");
-
 const REASON_KEYS = new Set(["mismatch", "context", "misunderstanding", "inaccurate"]);
 const REASON_LABELS = {
-    mismatch:         "This doesn’t reflect what happened on the date.",
-    context:          "Important context was missing.",
-    misunderstanding: "This was a misunderstanding.",
-    inaccurate:       "The feedback was inaccurate.",
+    mismatch: "This doesn’t reflect what happened on the date.",
+    context:"Important context was missing.",
+    misunderstanding:"This was a misunderstanding.",
+    inaccurate: "The feedback was inaccurate.",
 };
-/** Legacy UI sent category + long explanation; map to new keys. */
 const LEGACY_CATEGORY_TO_KEY = {
     Misunderstanding: "misunderstanding",
-    "False report":   "inaccurate",
+    "False report":"inaccurate",
     "Context missing": "context",
 };
-
 const MAX_EXPLANATION = 320;
 const MAX_NOTE = 200;
 const MAX_APPEALS_90D = 3;
@@ -22,7 +19,6 @@ const MAX_APPEALS_90D = 3;
 exports.submitAppeal = async (req, res) => {
     const userId = parseInt(req.user.id, 10);
     const { reason, note, category, explanation } = req.body;
-
     let reasonKey = typeof reason === "string" ? reason.trim() : "";
     if (!REASON_KEYS.has(reasonKey) && category && LEGACY_CATEGORY_TO_KEY[category]) {
         reasonKey = LEGACY_CATEGORY_TO_KEY[category];
@@ -32,15 +28,12 @@ exports.submitAppeal = async (req, res) => {
             error: "reason must be one of: mismatch, context, misunderstanding, inaccurate.",
         });
     }
-
     let extraNote = "";
     if (typeof note === "string" && note.trim()) {
         extraNote = note.trim().slice(0, MAX_NOTE);
     } else if (typeof explanation === "string" && explanation.trim() && !note) {
-        /** @deprecated open-text path */
         extraNote = explanation.trim().slice(0, MAX_NOTE);
     }
-
     const label = REASON_LABELS[reasonKey];
     const composed = extraNote.length > 0 ? `${label}\n\n${extraNote}` : label;
     if (composed.length > MAX_EXPLANATION) {
@@ -48,7 +41,6 @@ exports.submitAppeal = async (req, res) => {
             error: `Reason and optional note combined must be at most ${MAX_EXPLANATION} characters.`,
         });
     }
-
     try {
         const acct = await pool.query(
             `SELECT account_status FROM users WHERE user_id = $1`,
@@ -62,9 +54,7 @@ exports.submitAppeal = async (req, res) => {
             `SELECT action_id FROM moderation_actions WHERE user_id = $1 AND active = true LIMIT 1`,
             [userId]
         );
-
         let relatedActionId = openActions.rows.length > 0 ? openActions.rows[0].action_id : null;
-
         if (relatedActionId == null) {
             const safetyFlag = await pool.query(
                 `SELECT 1 FROM trust_safety_events
@@ -90,7 +80,6 @@ exports.submitAppeal = async (req, res) => {
         if ((recent.rows[0]?.c ?? 0) >= MAX_APPEALS_90D) {
             return res.status(429).json({ error: "Maximum appeals reached for this 90-day period." });
         }
-
         const client = await pool.connect();
         try {
             await client.query("BEGIN");
@@ -102,9 +91,7 @@ exports.submitAppeal = async (req, res) => {
                 [userId, reasonKey, composed, relatedActionId]
             );
             const appealId = ins.rows[0].appeal_id;
-
             const resolution = await resolveAppealAutomatically(client, userId, appealId);
-
             await client.query("COMMIT");
             res.status(201).json({
                 message: resolution.summary,
@@ -134,7 +121,6 @@ exports.submitAppeal = async (req, res) => {
         res.status(500).json({ error: "Failed to submit appeal." });
     }
 };
-
 exports.getAppealEligibility = async (req, res) => {
     const userId = parseInt(req.user.id, 10);
     try {
@@ -168,7 +154,6 @@ exports.getAppealEligibility = async (req, res) => {
         res.status(500).json({ error: "Failed to check eligibility." });
     }
 };
-
 exports.listMyAppeals = async (req, res) => {
     const userId = parseInt(req.user.id, 10);
     try {

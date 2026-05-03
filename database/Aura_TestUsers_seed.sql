@@ -1,12 +1,3 @@
--- ============================================
--- Aura Dating - Test Users Seed File
--- ============================================
-
-
--- ============================================
--- MAIN TEST USER
--- ============================================
-
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -68,12 +59,6 @@ INSERT INTO preferences (
 
 INSERT INTO preference_genders (preference_id, gender_type_id)
 VALUES (1, 3);
-
--- ============================================
--- SHOULD MATCH
--- ============================================
-
--- Beatrice: Perfect match
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -104,8 +89,6 @@ INSERT INTO users (
 
 INSERT INTO trust_score (user_id, internal_score, last_updated)
 VALUES (2, 90, NOW());
-
--- Zendaya: Good match
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -168,12 +151,6 @@ INSERT INTO users (
 
 INSERT INTO trust_score (user_id, internal_score, last_updated)
 VALUES (4, 55, NOW());
-
--- ============================================
--- SHOULD BE FILTERED OUT
--- ============================================
-
--- Shane: FILTERED - trust score 25
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -205,7 +182,6 @@ INSERT INTO users (
 INSERT INTO trust_score (user_id, internal_score, last_updated)
 VALUES (5, 25, NOW());
 
--- Priya: FILTERED - wrong religion
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -236,8 +212,6 @@ INSERT INTO users (
 
 INSERT INTO trust_score (user_id, internal_score, last_updated)
 VALUES (6, 80, NOW());
-
--- Tyler: FILTERED - wrong gender
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -268,8 +242,6 @@ INSERT INTO users (
 
 INSERT INTO trust_score (user_id, internal_score, last_updated)
 VALUES (7, 80, NOW());
-
--- Sandra: FILTERED - age out of range
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -300,8 +272,6 @@ INSERT INTO users (
 
 INSERT INTO trust_score (user_id, internal_score, last_updated)
 VALUES (8, 85, NOW());
-
--- Jasmine: FILTERED - wrong state
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,
@@ -332,8 +302,6 @@ INSERT INTO users (
 
 INSERT INTO trust_score (user_id, internal_score, last_updated)
 VALUES (9, 85, NOW());
-
--- Derek: FILTERED - suspended account
 INSERT INTO users (
     first_name, last_name, email, password_hash,
     date_of_birth, gender_identity,

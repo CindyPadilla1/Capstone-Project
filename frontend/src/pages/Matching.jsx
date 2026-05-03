@@ -6,9 +6,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { API_BASE_URL } from "../config/api";
-
 const MIN_DATES_FOR_PUBLIC = 3;
-
 function MatchReasonChips({ reasons }) {
     if (!Array.isArray(reasons) || reasons.length === 0) return null;
     return (
@@ -22,46 +20,37 @@ function MatchReasonChips({ reasons }) {
         </div>
     );
 }
-
 function matchCardTrustLabel(user, shieldRating) {
     if (shieldRating == null) return "New User";
     if (user?.trust_label === "New User") return "";
     return user?.trust_label || "";
 }
-
 function matchCardShieldRating(user) {
     if (!user) return null;
-
     const num = (v) => {
         if (v == null || v === "") return null;
         const x = Number(v);
         return Number.isFinite(x) ? x : null;
     };
     const datesReviewed = num(user.trust_dates_reviewed ?? user.dates_reviewed) ?? 0;
-
     const fromDisplay = num(user.trust_shield_display);
     if (fromDisplay != null && fromDisplay >= 1 && fromDisplay <= 5) {
         return Math.round(fromDisplay);
     }
-
     const fromDirect = num(user.shield_rating ?? user.starRating);
     if (fromDirect != null && fromDirect >= 1 && fromDirect <= 5) {
         return Math.round(fromDirect);
     }
-
     const fromPub = num(user.public_trust_rating);
     if (fromPub != null && datesReviewed >= MIN_DATES_FOR_PUBLIC) {
         return Math.max(1, Math.min(5, Math.round(fromPub)));
     }
-
     return null;
 }
-
 function Pill({ label }) {
     if (!label) return null;
     return <span className="match-pill">{label}</span>;
 }
-
 function InfoRow({ icon, text }) {
     if (!text) return null;
     return (
@@ -71,7 +60,6 @@ function InfoRow({ icon, text }) {
         </div>
     );
 }
-
 function MatchCard({ user, onHeart, onReject, likesLeft, heartPending, swipeHeartOut, viewerProfile, viewerPreferences, matchRank, matchTotal }) {
     const [animating, setAnimating] = useState(null);
     const [reportOpen, setReportOpen] = useState(false);
@@ -79,18 +67,15 @@ function MatchCard({ user, onHeart, onReject, likesLeft, heartPending, swipeHear
     const heartLocked = outOfLikes || heartPending;
     const shieldRating = matchCardShieldRating(user);
     const trustLabel = matchCardTrustLabel(user, shieldRating);
-
     const fire = (dir, cb) => {
         setAnimating(dir);
         setTimeout(() => { setAnimating(null); cb(); }, 0);
     };
-
     const cardClass = [
         "match-card",
         swipeHeartOut ? "match-card--swipe-heart" : "",
         animating === "reject" ? "match-card--swipe-reject" : "",
     ].filter(Boolean).join(" ");
-
     return (
         <>
         <div className={cardClass}>
@@ -110,7 +95,6 @@ function MatchCard({ user, onHeart, onReject, likesLeft, heartPending, swipeHear
                     <span className="match-card__trust-label">{trustLabel}</span>
                 </div>
             </div>
-
             <div className="match-card__body">
                 <div className="match-card__pills">
                     <Pill label={user.gender} />
@@ -118,7 +102,6 @@ function MatchCard({ user, onHeart, onReject, likesLeft, heartPending, swipeHear
                     {user.height && <Pill label={user.height} />}
                     {user.personality_name && <Pill label={user.personality_name} />}
                 </div>
-
                 <div className="match-card__grid">
                     <InfoRow icon="🎯" text={user.dating_goals_name} />
                     <InfoRow icon="🙏" text={user.religion_name} />
@@ -132,18 +115,14 @@ function MatchCard({ user, onHeart, onReject, likesLeft, heartPending, swipeHear
                     <InfoRow icon="👨‍👩‍👧" text={user.family_oriented_name && `Family: ${user.family_oriented_name}`} />
                     <InfoRow icon="🎓" text={user.education_name} />
                 </div>
-
                 {user.bio && (
                     <div className="match-card__bio">"{user.bio}"</div>
                 )}
-
                 <MatchReasonChips reasons={user.match_reasons} />
-
                 {user.score !== undefined && (
                     <div className="match-card__score">Match score: {user.score}</div>
                 )}
             </div>
-
             <div className="match-card__actions">
                 <button
                     type="button"
@@ -151,7 +130,6 @@ function MatchCard({ user, onHeart, onReject, likesLeft, heartPending, swipeHear
                     disabled={heartPending}
                     onClick={() => { if (!heartPending) fire("reject", onReject); }}
                 >✕</button>
-
                 <button
                     className={`btn-heart${heartLocked ? " btn-heart--disabled" : ""}`}
                     type="button"
@@ -160,7 +138,6 @@ function MatchCard({ user, onHeart, onReject, likesLeft, heartPending, swipeHear
                     title={outOfLikes ? "Daily like limit reached" : heartPending ? "Sending…" : "Like"}
                 >❤️</button>
             </div>
-
             <div className="match-card__report">
                 <button type="button" className="btn-match-report" onClick={() => setReportOpen(true)}>
                     Why this match?
@@ -179,7 +156,6 @@ function MatchCard({ user, onHeart, onReject, likesLeft, heartPending, swipeHear
         </>
     );
 }
-
 function LikedPortal({ likedUsers, onOpenChat }) {
     if (likedUsers.length === 0) return null;
     return (
@@ -202,7 +178,6 @@ function LikedPortal({ likedUsers, onOpenChat }) {
         </div>
     );
 }
-
 export default function Matching() {
     const {
         matches, matchesLoading, matchesError, currentUser, token, likedUsers, addLikedUser,
@@ -217,7 +192,6 @@ export default function Matching() {
     const [swipeHeartOut, setSwipeHeartOut] = useState(false);
     const [rejectError, setRejectError] = useState("");
     const navigate = useNavigate();
-
     useEffect(() => { if (!currentUser) navigate("/"); }, [currentUser, navigate]);
     useEffect(() => { setCurrentIndex(0); }, [matches]);
     useEffect(() => {
@@ -231,14 +205,12 @@ export default function Matching() {
         setLikeLimitAuraPlus(false);
         setRejectError("");
     }, [currentIndex]);
-
     const handleHeart = () => {
         const liked = matches[currentIndex];
         if (!liked || !currentUser || heartPending) return;
         if (likesLeft !== null && likesLeft <= 0) return;
         setHeartPending(true);
         setLikeActionError("");
-
         fetch(`${API_BASE_URL}/matches/${currentUser.user_id}/like`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -285,7 +257,6 @@ export default function Matching() {
                 setHeartPending(false);
             });
     };
-
     const handleReject = () => {
         const rejected = matches[currentIndex];
         if (!rejected || !currentUser || !token) return;
@@ -313,14 +284,12 @@ export default function Matching() {
             });
     };
     const handleOpenChat = (user) => navigate("/chat", { state: { selectedMatch: user } });
-
     const showIdleAuraPlus =
         likesLeft === 0
         && tierLimit === 3
         && currentIndex < matches.length
         && matches.length > 0
         && !likeActionError;
-
     if (matchesLoading) return (
         <>
             <Navbar />
@@ -329,7 +298,6 @@ export default function Matching() {
             </div>
         </>
     );
-
     if (matchesError) return (
         <>
             <Navbar />
@@ -338,13 +306,10 @@ export default function Matching() {
             </div>
         </>
     );
-
     const allSwiped = currentIndex >= matches.length;
-
     return (
         <>
             <Navbar />
-
             {showItsMatch && itsMatchPartner && (
                 <div className="match-overlay match-overlay--celebrate" role="dialog" aria-modal="true" aria-labelledby="its-a-match-title">
                     <div className="match-overlay__glow" aria-hidden />
@@ -391,7 +356,6 @@ export default function Matching() {
                     </div>
                 </div>
             )}
-
             <div className="faded-background min-vh-100 min-vw-100 match-page">
                 {(likesLeft !== null || (!allSwiped && matches.length > 0)) && (
                     <div className="match-counter">
@@ -403,14 +367,11 @@ export default function Matching() {
                         )}
                     </div>
                 )}
-
                 {showIdleAuraPlus && <AuraPlusHint className="aura-plus-hint--quiet" />}
-
                 {(likeActionError || rejectError) && (
                     <div className="match-like-alert" role="alert">{likeActionError || rejectError}</div>
                 )}
                 {likeLimitAuraPlus && <AuraPlusHint />}
-
                 {allSwiped || matches.length === 0 ? (
                     <div className="match-empty">
                         <div className="match-empty__icon">✨</div>
@@ -431,7 +392,6 @@ export default function Matching() {
                         matchTotal={matches.length}
                     />
                 )}
-
                 <LikedPortal likedUsers={likedUsers} onOpenChat={handleOpenChat} />
             </div>
         </>

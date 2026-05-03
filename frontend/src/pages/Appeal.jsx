@@ -3,16 +3,13 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useUser } from "../context/UserContext";
 import { API_BASE_URL } from "../config/api";
-
 const APPEAL_OPTIONS = [
     { key: "mismatch", label: "This doesn’t reflect what happened on the date" },
     { key: "context", label: "Important context was missing" },
     { key: "misunderstanding", label: "This was a misunderstanding" },
     { key: "inaccurate", label: "The feedback was inaccurate" },
 ];
-
 const STORAGE_KEY = "aura_appeal_resolution";
-
 export default function Appeal() {
     const { token, currentUser, refreshAuthProfile, bumpNotificationEpoch } = useUser();
     const navigate = useNavigate();
@@ -30,14 +27,12 @@ export default function Appeal() {
             return null;
         }
     });
-
     useEffect(() => {
         if (!currentUser) {
             navigate("/");
             return;
         }
         if (!token) return;
-
         let cancelled = false;
         (async () => {
             try {
@@ -70,7 +65,6 @@ export default function Appeal() {
         })();
         return () => { cancelled = true; };
     }, [currentUser, token, navigate]);
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
@@ -102,7 +96,6 @@ export default function Appeal() {
             try {
                 sessionStorage.setItem(STORAGE_KEY, JSON.stringify(resPayload));
             } catch {
-                /* ignore */
             }
             setNote("");
             setReason("");
@@ -114,26 +107,21 @@ export default function Appeal() {
             setSubmitting(false);
         }
     };
-
     const showDone = Boolean(justSubmitted);
     const clearDoneAndRetry = () => {
         try {
             sessionStorage.removeItem(STORAGE_KEY);
         } catch {
-            /* ignore */
         }
         setJustSubmitted(null);
     };
-
     return (
         <>
             <Navbar />
             <div className="faded-background min-vh-100 min-vw-100 d-flex justify-content-center pt-4 pb-5 px-3">
                 <div className="login-card p-4" style={{ maxWidth: "480px", width: "100%" }}>
                     <h4 className="section-title mb-3">Trust appeal</h4>
-
                     {loadingAppeals && <p className="small appeal-form-text">Loading…</p>}
-
                     {!loadingAppeals && showDone && (
                         <div className="appeal-done">
                             <p className="fw-semibold text-success mb-2">Your appeal was submitted and processed.</p>
@@ -166,14 +154,12 @@ export default function Appeal() {
                             )}
                         </div>
                     )}
-
                     {!loadingAppeals && !showDone && eligible === false && (
                         <p className="small appeal-form-text">
                             Appeals are not available right now. They open when the system has applied a moderation
                             action to your account, or within 90 days of a safety-related date check-in about you.
                         </p>
                     )}
-
                     {!loadingAppeals && !showDone && eligible === true && (
                         <form className="appeal-form" onSubmit={handleSubmit}>
                             <p className="small mb-4 appeal-form-text">

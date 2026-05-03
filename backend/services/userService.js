@@ -1,6 +1,5 @@
 const pool = require("../config/db");
 const { normalizePreferredGenderIds } = require("../matching/preferredGenderIds");
-
 async function getUserById(userId) {
     const userResult = await pool.query(
         `SELECT
@@ -21,7 +20,7 @@ async function getUserById(userId) {
             u.premium_suspended,
             u.trust_public_dates_only,
             u.visibility_rank_penalty,
-            ts.internal_score         AS trust_score,
+            ts.internal_score AS trust_score,
             ts.public_trust_rating,
             (SELECT COUNT(DISTINCT p.schedule_id)::int FROM post_date_checkin p
              WHERE p.reviewed_user_id = u.user_id AND p.schedule_id IS NOT NULL) AS trust_dates_reviewed,
@@ -39,9 +38,9 @@ async function getUserById(userId) {
             tr.travel_interest_name,
             pe.pet_interest_name,
             pt.personality_type_name,
-            dg.dating_goal_name       AS dating_goals_name,
-            wc.want_children          AS children_name,
-            pa.political_affil        AS political_name,
+            dg.dating_goal_name AS dating_goals_name,
+            wc.want_children AS children_name,
+            pa.political_affil  AS political_name,
             ec.education_career_name,
             u.religion_id,
             u.activity_level,
@@ -62,33 +61,31 @@ async function getUserById(userId) {
             u.ethnicity_id,
             u.education_career_id
         FROM users u
-        LEFT JOIN gender_type      gt ON gt.gender_type_id       = u.gender_identity
-        LEFT JOIN trust_score      ts ON ts.user_id              = u.user_id
-        LEFT JOIN photo            ph ON ph.user_id              = u.user_id AND ph.is_primary = true
-        LEFT JOIN religion_type    rt ON rt.religion_type_id     = u.religion_id
-        LEFT JOIN ethnicity_type   et ON et.ethnicity_type_id    = u.ethnicity_id
-        LEFT JOIN smoking          sm ON sm.smoking_id           = u.smoking_id
-        LEFT JOIN drinking         dr ON dr.drinking_id          = u.drinking_id
-        LEFT JOIN diet             di ON di.diet_id              = u.diet_id
-        LEFT JOIN activity_level   al ON al.activity_level_id   = u.activity_level
-        LEFT JOIN family_oriented  fo ON fo.family_oriented_id  = u.family_oriented
-        LEFT JOIN music            mu ON mu.music_id             = u.music
-        LEFT JOIN gamer            ga ON ga.isgamer_id           = u.gamer
-        LEFT JOIN reader           re ON re.isreader_id          = u.reader
+        LEFT JOIN gender_type gt ON gt.gender_type_id = u.gender_identity
+        LEFT JOIN trust_score ts ON ts.user_id  = u.user_id
+        LEFT JOIN photo  ph ON ph.user_id   = u.user_id AND ph.is_primary = true
+        LEFT JOIN religion_type rt ON rt.religion_type_id = u.religion_id
+        LEFT JOIN ethnicity_type et ON et.ethnicity_type_id = u.ethnicity_id
+        LEFT JOIN smoking sm ON sm.smoking_id = u.smoking_id
+        LEFT JOIN drinking dr ON dr.drinking_id  = u.drinking_id
+        LEFT JOIN diet di ON di.diet_id = u.diet_id
+        LEFT JOIN activity_level  al ON al.activity_level_id = u.activity_level
+        LEFT JOIN family_oriented  fo ON fo.family_oriented_id = u.family_oriented
+        LEFT JOIN music mu ON mu.music_id  = u.music
+        LEFT JOIN gamer ga ON ga.isgamer_id  = u.gamer
+        LEFT JOIN reader  re ON re.isreader_id  = u.reader
         LEFT JOIN travel_interest  tr ON tr.travel_interest_id  = u.travel
-        LEFT JOIN pet_interest     pe ON pe.pet_interest_id      = u.pet_interest
+        LEFT JOIN pet_interest pe ON pe.pet_interest_id  = u.pet_interest
         LEFT JOIN personality_type pt ON pt.personality_type_id  = u.personality_type
-        LEFT JOIN dating_goals     dg ON dg.dating_goals_id      = u.dating_goals
-        LEFT JOIN want_children    wc ON wc.want_children_id     = u.children
-        LEFT JOIN political_affil  pa ON pa.political_affil_id   = u.political
-        LEFT JOIN education_career ec ON ec.education_career_id  = u.education_career_id
+        LEFT JOIN dating_goals dg ON dg.dating_goals_id = u.dating_goals
+        LEFT JOIN want_children wc ON wc.want_children_id  = u.children
+        LEFT JOIN political_affil pa ON pa.political_affil_id = u.political
+        LEFT JOIN education_career ec ON ec.education_career_id = u.education_career_id
         WHERE u.user_id = $1`,
         [userId]
     );
-
     if (userResult.rows.length === 0) return null;
     const user = userResult.rows[0];
-
     const prefResult = await pool.query(
         `SELECT
             p.preference_id,
@@ -125,16 +122,15 @@ async function getUserById(userId) {
             (SELECT array_agg(pg.gender_type_id) FILTER (WHERE pg.gender_type_id IS NOT NULL)
                FROM preference_genders pg WHERE pg.preference_id = p.preference_id) AS preferred_genders
         FROM preferences p
-        LEFT JOIN religion_type   rt_pref ON rt_pref.religion_type_id     = p.preferred_religion_type_id
-        LEFT JOIN ethnicity_type  et_pref ON et_pref.ethnicity_type_id    = p.preferred_ethnicity_id
-        LEFT JOIN dating_goals    dg_pref ON dg_pref.dating_goals_id      = p.preferred_dating_goals
-        LEFT JOIN want_children   wc_pref ON wc_pref.want_children_id     = p.preferred_want_children
+        LEFT JOIN religion_type rt_pref ON rt_pref.religion_type_id     = p.preferred_religion_type_id
+        LEFT JOIN ethnicity_type et_pref ON et_pref.ethnicity_type_id    = p.preferred_ethnicity_id
+        LEFT JOIN dating_goals dg_pref ON dg_pref.dating_goals_id      = p.preferred_dating_goals
+        LEFT JOIN want_children wc_pref ON wc_pref.want_children_id     = p.preferred_want_children
         LEFT JOIN political_affil pa_pref ON pa_pref.political_affil_id   = p.preferred_political_affil
         LEFT JOIN family_oriented fo_pref ON fo_pref.family_oriented_id   = p.preferred_family_oriented
         WHERE p.user_id = $1`,
         [userId]
     );
-
     const prefs = prefResult.rows[0] || null;
     if (prefs) {
         prefs.preferred_genders = normalizePreferredGenderIds(prefs.preferred_genders);
@@ -142,7 +138,6 @@ async function getUserById(userId) {
     user.preferences = prefs;
     return user;
 }
-
 async function getCandidates(excludeUserId) {
     const result = await pool.query(
         `SELECT
@@ -163,7 +158,7 @@ async function getCandidates(excludeUserId) {
             u.premium_suspended,
             u.trust_public_dates_only,
             u.visibility_rank_penalty,
-            ts.internal_score         AS trust_score,
+            ts.internal_score AS trust_score,
             ts.public_trust_rating,
             (SELECT COUNT(DISTINCT p.schedule_id)::int FROM post_date_checkin p
              WHERE p.reviewed_user_id = u.user_id AND p.schedule_id IS NOT NULL) AS trust_dates_reviewed,
@@ -181,9 +176,9 @@ async function getCandidates(excludeUserId) {
             tr.travel_interest_name,
             pe.pet_interest_name,
             pt.personality_type_name,
-            dg.dating_goal_name       AS dating_goals_name,
-            wc.want_children          AS children_name,
-            pa.political_affil        AS political_name,
+            dg.dating_goal_name  AS dating_goals_name,
+            wc.want_children  AS children_name,
+            pa.political_affil AS political_name,
             ec.education_career_name,
             u.smoking_id,
             u.drinking_id,
@@ -206,27 +201,27 @@ async function getCandidates(excludeUserId) {
             u.education_career_id,
             co.coffee_name
         FROM users u
-        LEFT JOIN gender_type      gt ON gt.gender_type_id       = u.gender_identity
-        LEFT JOIN trust_score      ts ON ts.user_id              = u.user_id
-        LEFT JOIN photo            ph ON ph.user_id              = u.user_id AND ph.is_primary = true
-        LEFT JOIN religion_type    rt ON rt.religion_type_id     = u.religion_id
-        LEFT JOIN ethnicity_type   et ON et.ethnicity_type_id    = u.ethnicity_id
-        LEFT JOIN smoking          sm ON sm.smoking_id           = u.smoking_id
-        LEFT JOIN drinking         dr ON dr.drinking_id          = u.drinking_id
-        LEFT JOIN coffee_drinker   co ON co.coffee_id            = u.coffee_id
-        LEFT JOIN diet             di ON di.diet_id              = u.diet_id
-        LEFT JOIN activity_level   al ON al.activity_level_id   = u.activity_level
-        LEFT JOIN family_oriented  fo ON fo.family_oriented_id  = u.family_oriented
-        LEFT JOIN music            mu ON mu.music_id             = u.music
-        LEFT JOIN gamer            ga ON ga.isgamer_id           = u.gamer
-        LEFT JOIN reader           re ON re.isreader_id          = u.reader
-        LEFT JOIN travel_interest  tr ON tr.travel_interest_id  = u.travel
-        LEFT JOIN pet_interest     pe ON pe.pet_interest_id      = u.pet_interest
-        LEFT JOIN personality_type pt ON pt.personality_type_id  = u.personality_type
-        LEFT JOIN dating_goals     dg ON dg.dating_goals_id      = u.dating_goals
-        LEFT JOIN want_children    wc ON wc.want_children_id     = u.children
-        LEFT JOIN political_affil  pa ON pa.political_affil_id   = u.political
-        LEFT JOIN education_career ec ON ec.education_career_id  = u.education_career_id
+        LEFT JOIN gender_type gt ON gt.gender_type_id = u.gender_identity
+        LEFT JOIN trust_score ts ON ts.user_id = u.user_id
+        LEFT JOIN photo ph ON ph.user_id  = u.user_id AND ph.is_primary = true
+        LEFT JOIN religion_type rt ON rt.religion_type_id = u.religion_id
+        LEFT JOIN ethnicity_type et ON et.ethnicity_type_id  = u.ethnicity_id
+        LEFT JOIN smoking sm ON sm.smoking_id = u.smoking_id
+        LEFT JOIN drinking dr ON dr.drinking_id = u.drinking_id
+        LEFT JOIN coffee_drinker co ON co.coffee_id = u.coffee_id
+        LEFT JOIN diet di ON di.diet_id  = u.diet_id
+        LEFT JOIN activity_level al ON al.activity_level_id = u.activity_level
+        LEFT JOIN family_oriented  fo ON fo.family_oriented_id = u.family_oriented
+        LEFT JOIN music mu ON mu.music_id = u.music
+        LEFT JOIN gamer ga ON ga.isgamer_id = u.gamer
+        LEFT JOIN reader re ON re.isreader_id = u.reader
+        LEFT JOIN travel_interest  tr ON tr.travel_interest_id = u.travel
+        LEFT JOIN pet_interest pe ON pe.pet_interest_id  = u.pet_interest
+        LEFT JOIN personality_type pt ON pt.personality_type_id = u.personality_type
+        LEFT JOIN dating_goals dg ON dg.dating_goals_id = u.dating_goals
+        LEFT JOIN want_children wc ON wc.want_children_id = u.children
+        LEFT JOIN political_affil pa ON pa.political_affil_id = u.political
+        LEFT JOIN education_career ec ON ec.education_career_id = u.education_career_id
         WHERE u.user_id != $1
           AND u.account_status = 'active'
           AND NOT EXISTS (

@@ -4,7 +4,6 @@ import Navbar from "../components/Navbar";
 import AuraPlusHint from "../components/AuraPlusHint";
 import { useUser } from "../context/UserContext";
 import { API_BASE_URL } from "../config/api";
-
 const VENUES = [
     { icon: "🍽️", name: "Restaurant",    suggestion: "Piccolo Sogno",         venue_type: "public",      lat: 41.8851, lng: -87.6445 },
     { icon: "🎬", name: "Movie Theater",  suggestion: "AMC River East",         venue_type: "public",      lat: 41.8918, lng: -87.6196 },
@@ -12,7 +11,6 @@ const VENUES = [
     { icon: "🎳", name: "Bowling",        suggestion: "Pinstripes",             venue_type: "semi-public", lat: 41.8960, lng: -87.6270 },
     { icon: "🌳", name: "Park / Outdoors",suggestion: "Millennium Park",        venue_type: "public",      lat: 41.8827, lng: -87.6233 },
 ];
-
 const TIME_SLOTS = [
     { label: "Friday 6PM – 10PM",   day: "friday",   start: "18:00", end: "22:00" },
     { label: "Saturday 12PM – 5PM", day: "saturday", start: "12:00", end: "17:00" },
@@ -20,25 +18,19 @@ const TIME_SLOTS = [
     { label: "Sunday 12PM – 5PM",   day: "sunday",   start: "12:00", end: "17:00" },
     { label: "Sunday 6PM – 9PM",    day: "sunday",   start: "18:00", end: "21:00" },
 ];
-
 function VenueMap({ venues, selectedVenue, onSelect }) {
     const mapRef     = useRef(null);
     const mapObjRef  = useRef(null);
     const markersRef = useRef([]);
-
     useEffect(() => {
         if (mapObjRef.current) return;
-
         const init = () => {
             if (!window.L || !mapRef.current) return false;
-
             const map = window.L.map(mapRef.current).setView([41.8827, -87.6233], 13);
             mapObjRef.current = map;
-
             window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 attribution: "© OpenStreetMap contributors",
             }).addTo(map);
-
             venues.forEach((venue) => {
                 const marker = window.L.marker([venue.lat, venue.lng])
                     .addTo(map)
@@ -48,13 +40,11 @@ function VenueMap({ venues, selectedVenue, onSelect }) {
             });
             return true;
         };
-
         if (!init()) {
             const interval = setInterval(() => { if (init()) clearInterval(interval); }, 100);
             return () => clearInterval(interval);
         }
     }, []);
-
     useEffect(() => {
         if (!window.L || !mapObjRef.current) return;
         markersRef.current.forEach(({ marker, venue }) => {
@@ -70,26 +60,21 @@ function VenueMap({ venues, selectedVenue, onSelect }) {
 
     return <div ref={mapRef} className="venue-map" />;
 }
-
 function DatePlanner() {
     const location  = useLocation();
     const navigate  = useNavigate();
     const { currentUser, token } = useUser();
-
     const match    = location.state?.match    || null;
     const returnTo = location.state?.returnTo || null;
-
     const [selectedVenue, setSelectedVenue] = useState(null);
     const [selectedSlot,  setSelectedSlot]  = useState(null);
     const [sent,  setSent]  = useState(false);
     const [error, setError] = useState("");
     const [dateLimitAuraPlus, setDateLimitAuraPlus] = useState(false);
-
     useEffect(() => {
         setError("");
         setDateLimitAuraPlus(false);
     }, [selectedVenue, selectedSlot]);
-
     const buildProposedDatetime = (slot) => {
         const days   = { friday: 5, saturday: 6, sunday: 0 };
         const target = days[slot.day];
@@ -101,7 +86,6 @@ function DatePlanner() {
         date.setHours(parseInt(h), parseInt(m), 0, 0);
         return date.toISOString();
     };
-
     const handleSendRequest = async () => {
         if (!selectedVenue || !selectedSlot) {
             setError("Please pick a spot and a time.");
@@ -109,9 +93,7 @@ function DatePlanner() {
         }
         setError("");
         setDateLimitAuraPlus(false);
-
         const proposed_datetime = buildProposedDatetime(selectedSlot);
-
         try {
             const res = await fetch(`${API_BASE_URL}/dates/request`, {
                 method: "POST",
@@ -120,16 +102,14 @@ function DatePlanner() {
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    match_id:          match?.match_id       || null,
-                    sender_id:         currentUser?.user_id  || null,
-                    venue_type:        selectedVenue.venue_type,
-                    venue_name:        selectedVenue.suggestion,
+                    match_id:  match?.match_id       || null,
+                    sender_id: currentUser?.user_id  || null,
+                    venue_type: selectedVenue.venue_type,
+                    venue_name: selectedVenue.suggestion,
                     proposed_datetime,
                 }),
             });
-
             const data = await res.json();
-
             if (!res.ok) {
                 setError(data.error || "Failed to send date request.");
                 setDateLimitAuraPlus(data.upgrade_hint === "aura_plus");
@@ -138,11 +118,9 @@ function DatePlanner() {
         } catch (err) {
             console.error("Date request failed:", err);
         }
-
         setSent(true);
         setTimeout(() => navigate(returnTo || "/chat"), 1500);
     };
-
     return (
         <>
             <Navbar />
@@ -188,7 +166,6 @@ function DatePlanner() {
                             </div>
                         ))}
                     </div>
-
                     <h5 className="section-title">Pick a Time</h5>
                     <div className="d-flex flex-column gap-2 mb-4">
                         {TIME_SLOTS.map((slot) => (
@@ -207,10 +184,8 @@ function DatePlanner() {
                             </div>
                         ))}
                     </div>
-
                     {error && <p className="text-danger small mb-2">{error}</p>}
                     {dateLimitAuraPlus && <AuraPlusHint className="mb-3 text-start" />}
-
                     {sent ? (
                         <div className="text-center text-success fw-bold">
                             ✅ Date request sent to {match?.name}!
@@ -226,7 +201,6 @@ function DatePlanner() {
                             </button>
                         </div>
                     )}
-
                     {returnTo && !sent && (
                         <div className="text-center mt-3">
                             <button className="btn btn-sm btn-outline-danger" onClick={() => navigate(returnTo)}>
@@ -234,11 +208,9 @@ function DatePlanner() {
                             </button>
                         </div>
                     )}
-
                 </div>
             </div>
         </>
     );
 }
-
 export default DatePlanner;

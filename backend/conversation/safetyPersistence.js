@@ -1,6 +1,3 @@
-// Loads and saves Feature 3 engine state to PostgreSQL (conversation_safety_state.engine_snapshot).
-// Falls back to in-memory-only if the DB is unavailable or the column is missing.
-
 const pool = require("../config/db");
 const {
     STATE,
@@ -21,7 +18,6 @@ function _mergeDefaults(matchId, raw) {
     const initiators = new Set(
         Array.isArray(raw.initiators) ? raw.initiators.map(Number) : []
     );
-
     return {
         ...base,
         ...raw,
@@ -53,7 +49,6 @@ function _mergeDefaults(matchId, raw) {
             raw.boundarySetByUserId != null ? Number(raw.boundarySetByUserId) : null,
     };
 }
-
 function _serialize(conv) {
     return {
         matchId: conv.matchId,
@@ -75,21 +70,15 @@ function _serialize(conv) {
         boundarySetByUserId: conv.boundarySetByUserId != null ? Number(conv.boundarySetByUserId) : null,
     };
 }
-
-/**
- * Ensure match conversation is loaded from DB once per process (or defaults).
- */
 async function ensureConversationLoaded(matchId) {
     const mid = normalizeMatchId(matchId);
     if (mid == null) return;
     if (loadedFromDb.has(mid)) return;
-
     if (process.env.FEATURE3_TEST_MODE === "1") {
         getConversation(mid);
         loadedFromDb.add(mid);
         return;
     }
-
     try {
         const res = await pool.query(
             `SELECT engine_snapshot,
@@ -102,7 +91,6 @@ async function ensureConversationLoaded(matchId) {
              WHERE match_id = $1`,
             [mid]
         );
-
         if (res.rows.length > 0) {
             const row = res.rows[0];
             let merged;
@@ -132,10 +120,8 @@ async function ensureConversationLoaded(matchId) {
         }
         getConversation(mid);
     }
-
     loadedFromDb.add(mid);
 }
-
 async function persistConversation(matchId) {
     const mid = normalizeMatchId(matchId);
     if (mid == null) return;
@@ -152,7 +138,6 @@ async function persistConversation(matchId) {
               : "normal";
 
     const stateName = STATE_NAMES[conv.state] || "introductory";
-
     try {
         await pool.query(
             `INSERT INTO conversation_safety_state
@@ -186,7 +171,6 @@ async function persistConversation(matchId) {
         }
     }
 }
-
 function invalidateLoadCacheForTests(matchId) {
     if (matchId == null) loadedFromDb.clear();
     else {
@@ -194,7 +178,6 @@ function invalidateLoadCacheForTests(matchId) {
         if (mid != null) loadedFromDb.delete(mid);
     }
 }
-
 module.exports = {
     ensureConversationLoaded,
     persistConversation,

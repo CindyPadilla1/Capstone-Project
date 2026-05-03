@@ -1,12 +1,10 @@
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
-
 const filterMatches = require("../matching/filterMatches");
 const rankMatches = require("../matching/rankMatches");
 const scoreMatch = require("../matching/scoreMatch");
 const { milesBetween } = require("../utils/geoDistance");
 const { parseCityStateLocation } = require("../utils/parseCityStateLocation");
-
 function basePrefs(overrides = {}) {
     return {
         preferred_age_min: 18,
@@ -31,7 +29,6 @@ function basePrefs(overrides = {}) {
         ...overrides,
     };
 }
-
 function baseUser(overrides = {}) {
     return {
         user_id: 1,
@@ -43,7 +40,6 @@ function baseUser(overrides = {}) {
         ...overrides,
     };
 }
-
 function baseCandidate(overrides = {}) {
     return {
         user_id: 2,
@@ -76,7 +72,6 @@ function baseCandidate(overrides = {}) {
         ...overrides,
     };
 }
-
 function fullScoreFields() {
     return {
         religion_id: 6,
@@ -98,7 +93,6 @@ function fullScoreFields() {
         personality_type: 3,
     };
 }
-
 function lonAtMostMilesEast(lat, lon, maxMiles) {
     let lo = lon;
     let hi = lon + 0.01;
@@ -113,7 +107,6 @@ function lonAtMostMilesEast(lat, lon, maxMiles) {
     }
     return lo;
 }
-
 function lonReachMilesEast(lat, lon, targetMiles) {
     let lo = lon;
     let hi = lon + 0.01;
@@ -128,7 +121,6 @@ function lonReachMilesEast(lat, lon, targetMiles) {
     }
     return hi;
 }
-
 function mergeMatchReasonsForTest(userLat, userLon, cLat, cLon, breakdown) {
     const distMi = milesBetween(userLat, userLon, cLat, cLon);
     const proximityBits = [];
@@ -153,37 +145,31 @@ function mergeMatchReasonsForTest(userLat, userLon, cLat, cLon, breakdown) {
     }
     return match_reasons.slice(0, 8);
 }
-
 function chatInboxPreview(match) {
     return match.last_message && String(match.last_message).trim()
         ? match.last_message
         : `You matched with ${match.name} — say hello!`;
 }
-
 function shouldShowItsMatchOverlay(likeResponseBody) {
     return Boolean(likeResponseBody && likeResponseBody.match_created);
 }
-
 describe("feature1 comprehensive trust elimination boundary", () => {
     test("trust 40 excluded at threshold", () => {
         const user = baseUser();
         const cand = baseCandidate({ trust_score: 40 });
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
-
     test("trust 39 excluded below threshold", () => {
         const user = baseUser();
         const cand = baseCandidate({ trust_score: 39 });
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
-
     test("trust 41 passes elimination when other filters ok", () => {
         const user = baseUser();
         const cand = baseCandidate({ trust_score: 41 });
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
 });
-
 describe("feature1 comprehensive trust penalty band", () => {
     test("trust 50 penalized within internal cutoff", () => {
         const user = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
@@ -193,7 +179,6 @@ describe("feature1 comprehensive trust penalty band", () => {
         assert.equal(ranked[0].trust_penalized, true);
         assert.equal(ranked[0].score, Math.max(0, raw - 15));
     });
-
     test("trust 41 penalized", () => {
         const user = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
         const cand = { user_id: 4, trust_score: 41, gender_identity: 3, ...fullScoreFields() };
@@ -202,7 +187,6 @@ describe("feature1 comprehensive trust penalty band", () => {
         assert.equal(ranked[0].trust_penalized, true);
         assert.equal(ranked[0].score, Math.max(0, raw - 15));
     });
-
     test("trust 60 not penalized above band", () => {
         const user = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
         const cand = { user_id: 4, trust_score: 60, gender_identity: 3, ...fullScoreFields() };
@@ -211,7 +195,6 @@ describe("feature1 comprehensive trust penalty band", () => {
         assert.equal(ranked[0].trust_penalized, false);
         assert.equal(ranked[0].score, raw);
     });
-
     test("trust 61 not penalized", () => {
         const user = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
         const cand = { user_id: 4, trust_score: 61, gender_identity: 3, ...fullScoreFields() };
@@ -221,11 +204,9 @@ describe("feature1 comprehensive trust penalty band", () => {
         assert.equal(ranked[0].score, raw);
     });
 });
-
 describe("feature1 comprehensive distance boundary", () => {
     const lat = 41.878113;
     const lon = -87.629799;
-
     test("candidate exactly at max miles included", () => {
         const maxMi = 10;
         const lonEdge = lonAtMostMilesEast(lat, lon, maxMi);
@@ -243,7 +224,6 @@ describe("feature1 comprehensive distance boundary", () => {
         });
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
-
     test("candidate just over max miles excluded", () => {
         const maxMi = 10;
         const lonEdge = lonReachMilesEast(lat, lon, maxMi + 1);
@@ -259,7 +239,6 @@ describe("feature1 comprehensive distance boundary", () => {
         });
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
-
     test("candidate inside min distance ring excluded", () => {
         const minMi = 8;
         const lonClose = lonAtMostMilesEast(lat, lon, minMi - 0.25);
@@ -275,7 +254,6 @@ describe("feature1 comprehensive distance boundary", () => {
         });
         assert.equal(filterMatches(user, [cand]).length, 0);
     });
-
     test("candidate exactly at min distance included", () => {
         const minMi = 8;
         const lonEdge = lonReachMilesEast(lat, lon, minMi);
@@ -294,7 +272,6 @@ describe("feature1 comprehensive distance boundary", () => {
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
 });
-
 describe("feature1 comprehensive mutual gender pairs", () => {
     test("woman seeking man and man seeking woman passes", () => {
         const user = baseUser({
@@ -308,7 +285,6 @@ describe("feature1 comprehensive mutual gender pairs", () => {
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
 });
-
 describe("feature1 comprehensive dating goals and children scoring", () => {
     test("identical dating goals beats both serious and casual mismatches", () => {
         const base = { ...fullScoreFields(), gender_identity: 2 };
@@ -320,7 +296,6 @@ describe("feature1 comprehensive dating goals and children scoring", () => {
         assert.ok(sTwin > scoreMatch(viewer, serious).totalScore);
         assert.ok(sTwin > scoreMatch(viewer, casual).totalScore);
     });
-
     test("serious vs casual not both strictly closer than identical without other differences", () => {
         const base = { ...fullScoreFields(), gender_identity: 2 };
         const viewer = { ...base, user_id: 1, dating_goals: 3 };
@@ -330,7 +305,6 @@ describe("feature1 comprehensive dating goals and children scoring", () => {
         const b = scoreMatch(viewer, casual).totalScore;
         assert.equal(a, b);
     });
-
     test("aligned children scores higher than different children", () => {
         const base = { ...fullScoreFields(), gender_identity: 2, dating_goals: 3 };
         const viewer = { ...base, user_id: 1, children: 1 };
@@ -339,7 +313,6 @@ describe("feature1 comprehensive dating goals and children scoring", () => {
         assert.ok(scoreMatch(viewer, same).totalScore > scoreMatch(viewer, diff).totalScore);
     });
 });
-
 describe("feature1 comprehensive religion political score-only", () => {
     test("shared religion scores higher than different religion with identical vectors", () => {
         const base = { ...fullScoreFields(), gender_identity: 2, dating_goals: 3 };
@@ -348,7 +321,6 @@ describe("feature1 comprehensive religion political score-only", () => {
         const diff = { ...base, user_id: 3, gender_identity: 3, religion_id: 7 };
         assert.ok(scoreMatch(viewer, same).totalScore > scoreMatch(viewer, diff).totalScore);
     });
-
     test("shared political exact scores higher than distant political ids", () => {
         const base = { ...fullScoreFields(), gender_identity: 2, dating_goals: 3, religion_id: 6 };
         const viewer = { ...base, user_id: 1, political: 3 };
@@ -357,7 +329,6 @@ describe("feature1 comprehensive religion political score-only", () => {
         assert.ok(scoreMatch(viewer, same).totalScore > scoreMatch(viewer, far).totalScore);
     });
 });
-
 describe("feature1 comprehensive partner soft prefs do not filter deck", () => {
     test("strict ethnicity label on preferences does not remove candidate", () => {
         const user = baseUser({
@@ -370,7 +341,6 @@ describe("feature1 comprehensive partner soft prefs do not filter deck", () => {
         const cand = baseCandidate({ ethnicity_id: 9 });
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
-
     test("strict political label on preferences does not remove candidate", () => {
         const user = baseUser({
             preferences: basePrefs({
@@ -383,7 +353,6 @@ describe("feature1 comprehensive partner soft prefs do not filter deck", () => {
         assert.equal(filterMatches(user, [cand]).length, 1);
     });
 });
-
 describe("feature1 comprehensive score breakdown keys", () => {
     test("breakdown exposes category scores weights and reasons", () => {
         const a = { user_id: 1, gender_identity: 2, ...fullScoreFields() };
@@ -398,7 +367,6 @@ describe("feature1 comprehensive score breakdown keys", () => {
         assert.equal(r.breakdown.weights.values, 0.3);
     });
 });
-
 describe("feature1 comprehensive match reasons merge", () => {
     test("null coordinates yields no proximity prefix", () => {
         const a = { user_id: 1, gender_identity: 2, latitude: null, longitude: null, ...fullScoreFields() };
@@ -408,7 +376,6 @@ describe("feature1 comprehensive match reasons merge", () => {
         assert.ok(!merged.some((x) => typeof x === "string" && x.includes("mi away")));
         assert.ok(merged.length >= 1);
     });
-
     test("single score reason yields length one when no proximity", () => {
         const bd = {
             interests: 0,
@@ -420,7 +387,6 @@ describe("feature1 comprehensive match reasons merge", () => {
         const merged = mergeMatchReasonsForTest(null, null, null, null, bd);
         assert.deepEqual(merged, ["Aligned on kids"]);
     });
-
     test("many reasons plus proximity caps", () => {
         const bd = {
             interests: 80,
@@ -434,20 +400,17 @@ describe("feature1 comprehensive match reasons merge", () => {
         assert.equal(merged.length, 8);
     });
 });
-
 describe("feature1 comprehensive parseCityState errors", () => {
     test("Chicago alone returns guidance error", () => {
         const p = parseCityStateLocation("Chicago");
         assert.equal(p.ok, false);
         assert.ok(String(p.error).includes("City or state alone"));
     });
-
     test("IL alone returns guidance error", () => {
         const p = parseCityStateLocation("IL");
         assert.equal(p.ok, false);
     });
 });
-
 describe("feature1 comprehensive geocode success mock", () => {
     test("nominatim-shaped response returns coordinates", async () => {
         const orig = global.fetch;
@@ -463,7 +426,6 @@ describe("feature1 comprehensive geocode success mock", () => {
         delete require.cache[require.resolve("../services/geocodeCityState")];
     });
 });
-
 describe("feature1 comprehensive inbox preview parity", () => {
     test("ChatList empty last_message uses say hello copy", () => {
         const s = chatInboxPreview({ name: "Alex Kim", last_message: "" });
@@ -475,16 +437,13 @@ describe("feature1 comprehensive inbox preview parity", () => {
         assert.equal(s, "yo");
     });
 });
-
 describe("feature1 comprehensive overlay gate", () => {
     test("overlay opens when match_created true", () => {
         assert.equal(shouldShowItsMatchOverlay({ match_created: true }), true);
     });
-
     test("overlay stays closed on one-way like", () => {
         assert.equal(shouldShowItsMatchOverlay({ match_created: false }), false);
     });
-
     test("overlay partner fields come from current card", () => {
         const card = {
             user_id: 9,
@@ -497,7 +456,6 @@ describe("feature1 comprehensive overlay gate", () => {
         assert.equal(partner.image, "https://example.com/p.jpg");
     });
 });
-
 describe("feature1 comprehensive placeholder image", () => {
     test("missing profile photo uses ui-avatars fallback pattern", () => {
         const first_name = "Avery";

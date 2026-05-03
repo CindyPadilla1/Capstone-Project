@@ -1,11 +1,8 @@
 const { ni } = require("../utils/pgCoerce");
 const { milesBetween } = require("../utils/geoDistance");
 const { normalizePreferredGenderIds } = require("./preferredGenderIds");
-
 const TRUST_ELIMINATION_THRESHOLD = 40;
-
 let openToAllPartnerGenderTypeId = 6;
-
 async function ensureOpenToAllPartnerGenderTypeId(pool) {
     if (!pool || typeof pool.query !== "function") return;
     try {
@@ -18,19 +15,15 @@ async function ensureOpenToAllPartnerGenderTypeId(pool) {
             if (n !== null) openToAllPartnerGenderTypeId = n;
         }
     } catch {
-        /* keep default */
     }
 }
-
 function normalizeGenderIdList(raw) {
     return normalizePreferredGenderIds(raw);
 }
-
 function prefListTreatsPartnerGenderAsOpenToAll(preferred) {
     const p = normalizeGenderIdList(preferred);
     return p.some((id) => ni(id) === ni(openToAllPartnerGenderTypeId));
 }
-
 function getAge(dateOfBirth) {
     if (!dateOfBirth) return null;
     const today = new Date();
@@ -40,7 +33,6 @@ function getAge(dateOfBirth) {
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
     return age;
 }
-
 function genderMatch(user, candidate) {
     const preferred = normalizeGenderIdList(user.preferences?.preferred_genders);
     if (preferred.length === 0) return true;
@@ -51,12 +43,10 @@ function genderMatch(user, candidate) {
     if (cg === null) return false;
     return preferred.includes(cg);
 }
-
 function isOpenToAllIdentity(user) {
     const n = (user.gender_name || "").trim().toLowerCase();
     return n === "open to all";
 }
-
 function candidatePrefAcceptsViewerGender(candidatePreferred, viewerGenderId) {
     const p = normalizeGenderIdList(candidatePreferred);
     if (p.length === 0) return true;
@@ -67,7 +57,6 @@ function candidatePrefAcceptsViewerGender(candidatePreferred, viewerGenderId) {
     if (ug === null) return false;
     return p.includes(ug);
 }
-
 function seekOverlapsCandidatePartnerPrefs(seek, candidatePreferred) {
     const s = normalizeGenderIdList(seek);
     const c = normalizeGenderIdList(candidatePreferred);
@@ -77,14 +66,12 @@ function seekOverlapsCandidatePartnerPrefs(seek, candidatePreferred) {
     }
     return s.some((sid) => c.some((cid) => ni(sid) === ni(cid)));
 }
-
 function mutualGenderMatch(user, candidate) {
     if (!genderMatch(user, candidate)) return false;
     const candidatePreferred = normalizeGenderIdList(candidate.preferences?.preferred_genders);
     if (candidatePreferred.length === 0) return true;
     const ug = ni(user.gender_identity);
     if (ug === null) return false;
-
     if (isOpenToAllIdentity(user)) {
         const seek = normalizeGenderIdList(user.preferences?.preferred_genders);
         if (seek.length > 0) {
@@ -94,19 +81,14 @@ function mutualGenderMatch(user, candidate) {
             };
             if (!genderMatch(seekAsViewer, candidate)) return false;
         }
-
         if (candidatePrefAcceptsViewerGender(candidatePreferred, ug)) return true;
-
         if (seek.length > 0) {
             return seekOverlapsCandidatePartnerPrefs(seek, candidatePreferred);
         }
-
         return true;
     }
-
     return candidatePrefAcceptsViewerGender(candidatePreferred, ug);
 }
-
 function distanceCompatible(user, candidate, prefs) {
     const min = ni(prefs?.min_distance_miles);
     const max = ni(prefs?.max_distance_miles);
@@ -149,18 +131,10 @@ function filterMatches(user, candidates) {
         if (hMin !== null && ch !== null && ch < hMin) return false;
         if (hMax !== null && ch !== null && ch > hMax) return false;
 
-        /**
-         * Partner religion / politics / ethnicity / dating goals / children / family are soft signals
-         * (reflected in match score), not hard deck filters — avoids empty stacks after partial profile
-         * saves or label/ID drift while keeping age, height, and distance as hard constraints.
-         */
-
         if (!distanceCompatible(user, candidate, prefs)) return false;
-
         return true;
     });
 }
-
 filterMatches.TRUST_ELIMINATION_THRESHOLD = TRUST_ELIMINATION_THRESHOLD;
 filterMatches.ensureOpenToAllPartnerGenderTypeId = ensureOpenToAllPartnerGenderTypeId;
 module.exports = filterMatches;

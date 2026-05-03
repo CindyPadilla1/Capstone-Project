@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { API_BASE_URL } from "../config/api";
-
 function locationFieldError(loc) {
     const t = (loc || "").trim();
     if (!t) return "Location is required.";
@@ -17,7 +16,6 @@ function locationFieldError(loc) {
     }
     return null;
 }
-
 function Signup() {
     const navigate = useNavigate();
     const { login } = useUser();
@@ -29,7 +27,6 @@ function Signup() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-
     const handleDobChange = (e) => {
         let val = e.target.value.replace(/\D/g, "");
         if (val.length >= 3 && val.length <= 4) {
@@ -39,57 +36,44 @@ function Signup() {
         }
         setDob(val);
     };
-
     const handleSignup = async (e) => {
         e.preventDefault();
-
         if (!firstName.trim()) { setError("First name is required."); return; }
-        if (!lastName.trim())  { setError("Last name is required."); return; }
+        if (!lastName.trim()) { setError("Last name is required."); return; }
         const locErr = locationFieldError(location);
         if (locErr) { setError(locErr); return; }
-        if (!dob.trim())       { setError("Date of birth is required."); return; }
-
+        if (!dob.trim()) { setError("Date of birth is required."); return; }
         const dobRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/;
         if (!dobRegex.test(dob)) {
             setError("Please enter your date of birth as MM/DD/YYYY.");
             return;
         }
-
         const birthYear = parseInt(dob.split("/")[2]);
         const age = new Date().getFullYear() - birthYear;
-
         if (age < 18) { setError("You must be 18 or older."); return; }
         if (!email.includes("@")) { setError("Please enter a valid email."); return; }
         if (password.length < 6)  { setError("Password must be at least 6 characters."); return; }
-
         setError("");
         setLoading(true);
-
         try {
             const res = await fetch(`${API_BASE_URL}/auth/signup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ firstName, lastName, location, age, email, password }),
             });
-
             const data = await res.json();
-
             if (!res.ok) {
                 setError(data.error || "Signup failed. Please try again.");
                 return;
             }
-
-            // Store token + user in context and localStorage
             login(data.user, data.token);
             navigate("/questionnaire");
-
         } catch (err) {
             setError("Could not connect to server. Is the backend running?");
         } finally {
             setLoading(false);
         }
     };
-
     return (
         <div className="signin-page faded-background d-flex flex-column justify-content-center align-items-center min-vh-100">
             <div className="p-4 text-center">

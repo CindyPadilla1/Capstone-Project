@@ -1,28 +1,22 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
-
-/**
- * Capstone demo only: form data is not sent anywhere and is not persisted.
- */
 export default function AuraPlus() {
-    const [fullName, setFullName]       = useState("");
-    const [email, setEmail]             = useState("");
-    const [phone, setPhone]             = useState("");
+    const [fullName, setFullName] = useState("");
+    const [email, setEmail]= useState("");
+    const [phone, setPhone] = useState("");
     const [addressLine, setAddressLine] = useState("");
-    const [city, setCity]               = useState("");
-    const [zipCode, setZipCode]         = useState("");
-    const [cardName, setCardName]       = useState("");
-    const [cardNumber, setCardNumber]   = useState("");
-    const [cardExpiry, setCardExpiry]   = useState("");
-    const [plan, setPlan]               = useState("monthly");
+    const [city, setCity] = useState("");
+    const [zipCode, setZipCode]  = useState("");
+    const [cardName, setCardName]  = useState("");
+    const [cardNumber, setCardNumber] = useState("");
+    const [cardExpiry, setCardExpiry] = useState("");
+    const [plan, setPlan] = useState("monthly");
     const [submitted, setSubmitted]     = useState(false);
-
     const handleSubmit = (e) => {
         e.preventDefault();
         setSubmitted(true);
     };
-
     return (
         <>
             <Navbar />
@@ -32,7 +26,6 @@ export default function AuraPlus() {
                     <p className="text-muted small text-center mb-3">
                         Capstone demo — this form does not save or use your information.
                     </p>
-
                     {submitted ? (
                         <div className="text-center py-3">
                             <p className="text-success fw-semibold mb-2">Thanks for exploring Aura+!</p>
@@ -80,7 +73,6 @@ export default function AuraPlus() {
                                     autoComplete="off"
                                 />
                             </div>
-
                             <h3 className="fs-6 text-muted mt-4 mb-2">Billing address (fake)</h3>
                             <div className="mb-3">
                                 <label className="form-label">Street</label>
@@ -114,7 +106,6 @@ export default function AuraPlus() {
                                     />
                                 </div>
                             </div>
-
                             <h3 className="fs-6 text-muted mt-4 mb-2">Payment (fake)</h3>
                             <div className="mb-3">
                                 <label className="form-label">Name on card</label>
@@ -149,7 +140,6 @@ export default function AuraPlus() {
                                     autoComplete="off"
                                 />
                             </div>
-
                             <div className="mb-4">
                                 <label className="form-label d-block">Plan</label>
                                 <div className="d-flex flex-column gap-2">

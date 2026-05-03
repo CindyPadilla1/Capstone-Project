@@ -2,12 +2,10 @@ const http = require("http");
 const { once } = require("events");
 const path = require("path");
 const express = require("express");
-
 function loadFeature1Env() {
     require("dotenv").config({ path: path.join(__dirname, "..", "..", "..", ".env") });
     require("dotenv").config({ path: path.join(__dirname, "..", "..", ".env") });
 }
-
 function feature1PostgresEnvReady() {
     const h = String(process.env.DB_HOST || "").trim();
     if (!h) return false;
@@ -16,7 +14,6 @@ function feature1PostgresEnvReady() {
     if (/^<[^>]+>$/.test(h)) return false;
     return true;
 }
-
 function makeFeature1App() {
     const app = express();
     app.use(express.json({ limit: "15mb" }));
@@ -25,7 +22,6 @@ function makeFeature1App() {
     app.use("/profile", require("../../routes/profile"));
     return app;
 }
-
 async function withFeature1Server(app, fn) {
     const server = http.createServer(app);
     server.listen(0, "127.0.0.1");
@@ -42,7 +38,6 @@ async function withFeature1Server(app, fn) {
         ]);
     }
 }
-
 async function feature1Fetch(baseUrl, pathname, options = {}) {
     const { method = "GET", body, headers = {} } = options;
     const url = `${baseUrl}${pathname}`;
@@ -71,7 +66,6 @@ async function feature1Fetch(baseUrl, pathname, options = {}) {
     const status = typeof res.status === "number" ? res.status : 0;
     return { status, json, text };
 }
-
 module.exports = {
     loadFeature1Env,
     feature1PostgresEnvReady,

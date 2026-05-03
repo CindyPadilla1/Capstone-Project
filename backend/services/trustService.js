@@ -1,10 +1,4 @@
-/**
- * Feature 2: Safety-weighted trust scoring, public rating, pattern moderation.
- * Only structured safety fields affect scores; optional comments are moderation-only.
- */
-
 const pool = require("../config/db");
-
 const ROLLING_WINDOW = 10;
 const MIN_DATES_FOR_PUBLIC = 3;
 const MAX_PUBLIC_DROP_PER_EVENT = 0.3;
@@ -13,12 +7,9 @@ const PRESSURE_REPORTS_FOR_MOD = 3;
 const SAFETY_FLAG_WINDOW_DAYS = 7;
 const SAFETY_FLAGS_FOR_WARNING = 2;
 const VERY_LOW_TRUST = 25;
-
 function clamp(n, lo, hi) {
     return Math.max(lo, Math.min(hi, n));
 }
-
-/** Weighted internal delta from safety fields only (spec Rule 2). */
 function computeInternalDelta(signals) {
     const comfort = Number(signals.comfort_level);
     let delta = 0;
@@ -30,15 +21,12 @@ function computeInternalDelta(signals) {
     if (Number.isFinite(comfort) && comfort >= 4) delta += 1;
     return delta;
 }
-
-/** Map internal delta to a 1–5 session score for rolling public average. */
 function deltaToSessionPublicScore(delta) {
     const minD = -12;
     const maxD = 5;
     const t = (delta - minD) / (maxD - minD);
     return clamp(1 + t * 4, 1, 5);
 }
-
 function trustLabelFromPublic(publicRating, datesReviewed) {
     if (datesReviewed < MIN_DATES_FOR_PUBLIC || publicRating == null) {
         return { label: "New User", show_numeric: false, shield_count: null };
@@ -50,7 +38,6 @@ function trustLabelFromPublic(publicRating, datesReviewed) {
     const shield_count = clamp(Math.round(r), 1, 5);
     return { label, show_numeric: true, shield_count, public_trust_rating: Math.round(r * 10) / 10 };
 }
-
 async function countDistinctDatesReviewed(client, userId) {
     const r = await client.query(
         `SELECT COUNT(DISTINCT schedule_id)::int AS c
@@ -60,7 +47,6 @@ async function countDistinctDatesReviewed(client, userId) {
     );
     return r.rows[0]?.c ?? 0;
 }
-
 async function recomputePublicTrustRating(client, reviewedUserId, previousPublic) {
     const history = await client.query(
         `SELECT comfort_level, felt_safe, boundaries_respected, felt_pressured
@@ -71,7 +57,6 @@ async function recomputePublicTrustRating(client, reviewedUserId, previousPublic
         [reviewedUserId, ROLLING_WINDOW]
     );
     if (history.rows.length === 0) return { public_trust_rating: null, capped: false };
-
     const sessions = history.rows.map((row) =>
         deltaToSessionPublicScore(
             computeInternalDelta({
@@ -83,7 +68,6 @@ async function recomputePublicTrustRating(client, reviewedUserId, previousPublic
         )
     );
     let avg = sessions.reduce((a, b) => a + b, 0) / sessions.length;
-
     let capped = false;
     if (previousPublic != null && avg < previousPublic - MAX_PUBLIC_DROP_PER_EVENT) {
         avg = previousPublic - MAX_PUBLIC_DROP_PER_EVENT;
@@ -91,7 +75,6 @@ async function recomputePublicTrustRating(client, reviewedUserId, previousPublic
     }
     return { public_trust_rating: Math.round(avg * 100) / 100, capped };
 }
-
 async function isTrustFrozen(client, userId) {
     const r = await client.query(
         `SELECT trust_frozen_until FROM trust_score WHERE user_id = $1`,
@@ -102,7 +85,6 @@ async function isTrustFrozen(client, userId) {
     if (!u) return false;
     return new Date(u) > new Date();
 }
-
 async function recordSafetyEvents(client, subjectUserId, checkinId, signals) {
     if (signals.felt_pressured === true) {
         await client.query(
@@ -126,7 +108,6 @@ async function recordSafetyEvents(client, subjectUserId, checkinId, signals) {
         );
     }
 }
-
 async function applyPatternModeration(client, subjectUserId) {
     const since = new Date(Date.now() - SAFETY_FLAG_WINDOW_DAYS * 864e5);
     const flagRes = await client.query(
@@ -136,13 +117,11 @@ async function applyPatternModeration(client, subjectUserId) {
         [subjectUserId, since]
     );
     const flags7d = flagRes.rows[0]?.c ?? 0;
-
     const urow = await client.query(
         `SELECT moderation_warning_logged FROM users WHERE user_id = $1`,
         [subjectUserId]
     );
     const warned = urow.rows[0]?.moderation_warning_logged === true;
-
     if (flags7d >= SAFETY_FLAGS_FOR_WARNING && !warned) {
         await client.query(
             `UPDATE users SET moderation_warning_logged = true WHERE user_id = $1`,
@@ -164,7 +143,6 @@ async function applyPatternModeration(client, subjectUserId) {
             );
         }
     }
-
     const pressureSince = new Date(Date.now() - PRESSURE_LOOKBACK_DAYS * 864e5);
     const pressRes = await client.query(
         `SELECT COUNT(DISTINCT pdc.reviewer_user_id)::int AS c
@@ -201,7 +179,6 @@ async function applyPatternModeration(client, subjectUserId) {
             );
         }
     }
-
     const ts = await client.query(
         `SELECT internal_score FROM trust_score WHERE user_id = $1`,
         [subjectUserId]
@@ -234,18 +211,9 @@ async function applyPatternModeration(client, subjectUserId) {
         }
     }
 }
-
-/**
- * Process check-in after row insert: update scores, patterns, moderation.
- * @param {object} pg - pool or client (must support query)
- * @param {number} reviewedUserId
- * @param {number} checkinId
- * @param {object} signals - comfort_level, felt_safe, boundaries_respected, felt_pressured
- */
 async function applyTrustAfterCheckin(pg, reviewedUserId, checkinId, signals) {
     const client = pg;
     const frozen = await isTrustFrozen(client, reviewedUserId);
-
     if (frozen) {
         return {
             trust_frozen: true,
@@ -254,9 +222,7 @@ async function applyTrustAfterCheckin(pg, reviewedUserId, checkinId, signals) {
             public_trust_rating: null,
         };
     }
-
     await recordSafetyEvents(client, reviewedUserId, checkinId, signals);
-
     const delta = computeInternalDelta(signals);
     const prevRow = await client.query(
         `SELECT internal_score, public_trust_rating FROM trust_score WHERE user_id = $1`,
@@ -269,32 +235,25 @@ async function applyTrustAfterCheckin(pg, reviewedUserId, checkinId, signals) {
     const previousPublic = prevRow.rows[0].public_trust_rating != null
         ? Number(prevRow.rows[0].public_trust_rating)
         : null;
-
     const newInternal = clamp((previousInternal ?? 75) + delta, 0, 100);
-
     await client.query(
         `INSERT INTO trust_score_history (user_id, score_before, score_after, change_reason, created_at)
          VALUES ($1, $2, $3, $4, NOW())`,
         [reviewedUserId, previousInternal, newInternal, "post_date_checkin"]
     );
-
     const { public_trust_rating } = await recomputePublicTrustRating(
         client,
         reviewedUserId,
         previousPublic
     );
-
     const datesN = await countDistinctDatesReviewed(client, reviewedUserId);
     const pubToStore = datesN >= MIN_DATES_FOR_PUBLIC ? public_trust_rating : null;
-
     await client.query(
         `UPDATE trust_score SET internal_score = $1, public_trust_rating = $2, last_updated = NOW()
          WHERE user_id = $3`,
         [newInternal, pubToStore, reviewedUserId]
     );
-
     await applyPatternModeration(client, reviewedUserId);
-
     return {
         trust_frozen: false,
         internal_delta: delta,
@@ -303,7 +262,6 @@ async function applyTrustAfterCheckin(pg, reviewedUserId, checkinId, signals) {
         dates_reviewed: datesN,
     };
 }
-
 async function getTrustDisplayForUser(userId) {
     const r = await pool.query(
         `SELECT ts.internal_score, ts.public_trust_rating,
@@ -324,7 +282,6 @@ async function getTrustDisplayForUser(userId) {
         ...lbl,
     };
 }
-
 module.exports = {
     computeInternalDelta,
     deltaToSessionPublicScore,

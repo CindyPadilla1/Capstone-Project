@@ -1,14 +1,11 @@
 import { useEffect } from "react";
 import ShieldRating from "./ShieldRating";
-
 const DEFAULT_WEIGHTS = { interests: 0.25, lifestyle: 0.25, personality: 0.2, values: 0.3 };
-
 function num(v) {
     if (v == null || v === "") return null;
     const x = Number(v);
     return Number.isFinite(x) ? x : null;
 }
-
 function modalShieldRating(user) {
     if (!user) return null;
     const MIN_DATES_FOR_PUBLIC = 3;
@@ -23,19 +20,15 @@ function modalShieldRating(user) {
     }
     return null;
 }
-
 function normLabel(s) {
     return String(s || "").trim().toLowerCase();
 }
-
 function displayLabel(s) {
     const t = String(s || "").trim();
     return t || "—";
 }
-
 const MARK_OK = "✓";
 const MARK_NO = "✗";
-
 function symEqId(youId, themId, youLabel, themLabel) {
     const a = num(youId);
     const b = num(themId);
@@ -48,7 +41,6 @@ function symEqId(youId, themId, youLabel, themLabel) {
     if (!na || !nb) return "—";
     return na === nb ? MARK_OK : MARK_NO;
 }
-
 function symOrdinalId(youId, themId, youLabel, themLabel) {
     const a = num(youId);
     const b = num(themId);
@@ -64,7 +56,6 @@ function symOrdinalId(youId, themId, youLabel, themLabel) {
     if (!na || !nb) return "—";
     return na === nb ? MARK_OK : MARK_NO;
 }
-
 function symPersonalityId(youId, themId, youLabel, themLabel) {
     const a = num(youId);
     const b = num(themId);
@@ -80,7 +71,6 @@ function symPersonalityId(youId, themId, youLabel, themLabel) {
     if (na.includes("ambivert") || nb.includes("ambivert")) return MARK_OK;
     return na === nb ? MARK_OK : MARK_NO;
 }
-
 function inchesToDisplay(inches) {
     const n = num(inches);
     if (n == null) return "—";
@@ -88,38 +78,32 @@ function inchesToDisplay(inches) {
     const inch = Math.round(n % 12);
     return `${ft}'${inch}"`;
 }
-
 function pickYouDatingGoal(preferences, profile) {
     if (preferences?.datingGoalPref && preferences.datingGoalPref !== "No preference") {
         return preferences.datingGoalPref;
     }
     return profile?.datingGoal || "—";
 }
-
 function pickYouChildren(preferences, profile) {
     if (preferences?.childrenPref && preferences.childrenPref !== "No preference") {
         return preferences.childrenPref;
     }
     return profile?.children || "—";
 }
-
 function pickYouReligion(preferences, profile) {
     if (preferences?.religionPref) return preferences.religionPref;
     return profile?.religion || "—";
 }
-
 function pickYouPolitical(preferences, profile) {
     if (preferences?.politicalPref) return preferences.politicalPref;
     return profile?.politicalStanding || "—";
 }
-
 function pickYouFamily(preferences, profile) {
     if (preferences?.familyOrientedPref && preferences.familyOrientedPref !== "No preference") {
         return preferences.familyOrientedPref;
     }
     return profile?.familyOriented || "—";
 }
-
 function hardConstraintReligionLine(preferences, profile, themReligion) {
     const strict = Boolean(preferences?.religionPref?.trim());
     const youLabel = pickYouReligion(preferences, profile);
@@ -128,7 +112,6 @@ function hardConstraintReligionLine(preferences, profile, themReligion) {
     }
     return `Religion: No strict partner religion filter · Your profile lists ${displayLabel(youLabel)} · They are ${displayLabel(themReligion)} · ✓ Compatible`;
 }
-
 function hardConstraintPoliticalLine(preferences, profile, themPolitical) {
     const strict = Boolean(preferences?.politicalPref?.trim());
     const youLabel = pickYouPolitical(preferences, profile);
@@ -137,7 +120,6 @@ function hardConstraintPoliticalLine(preferences, profile, themPolitical) {
     }
     return `Political views: No strict partner political filter · Your profile lists ${displayLabel(youLabel)} · They are ${displayLabel(themPolitical)} · ✓ Compatible`;
 }
-
 function hardConstraintEthnicityLine(preferences, match) {
     const strict = Boolean(preferences?.ethnicityPref?.trim());
     const themEth = matchField(match, "ethnicity_name");
@@ -146,14 +128,12 @@ function hardConstraintEthnicityLine(preferences, match) {
     }
     return `Ethnicity: No strict partner ethnicity filter · They are ${displayLabel(themEth)} · ✓ Compatible`;
 }
-
 function matchField(m, ...keys) {
     for (const k of keys) {
         if (m[k] != null && String(m[k]).trim() !== "") return String(m[k]).trim();
     }
     return "";
 }
-
 function allocateWeightedPoints(interestsScore, lifestyleScore, personalityScore, valuesScore, w, rawTarget) {
     const pairs = [
         { dim: interestsScore, wt: w.interests ?? 0.25 },
@@ -185,7 +165,6 @@ function allocateWeightedPoints(interestsScore, lifestyleScore, personalityScore
     }
     return { wi: out[0], wl: out[1], wp: out[2], wv: out[3] };
 }
-
 function SubRow({ label, you, them, sym }) {
     return (
         <div className="match-report-modal__subrow">
@@ -197,7 +176,6 @@ function SubRow({ label, you, them, sym }) {
         </div>
     );
 }
-
 function HardRow({ line }) {
     return (
         <div className="match-report-modal__hard-row">
@@ -205,7 +183,6 @@ function HardRow({ line }) {
         </div>
     );
 }
-
 function DimensionBlock({
     title,
     pct,
@@ -229,7 +206,6 @@ function DimensionBlock({
         </div>
     );
 }
-
 export default function MatchReportModal({
     open,
     onClose,
@@ -244,9 +220,7 @@ export default function MatchReportModal({
         document.body.classList.add("modal-scroll-lock");
         return () => { document.body.classList.remove("modal-scroll-lock"); };
     }, [open]);
-
     if (!open || !match) return null;
-
     const profile = viewerProfile || {};
     const preferences = viewerPreferences || {};
     const bd = match.breakdown || {};
@@ -267,7 +241,6 @@ export default function MatchReportModal({
     const finalScore = match.score ?? rawScore;
     const shieldRating = modalShieldRating(match);
     const shieldText = shieldRating != null ? `${shieldRating}` : "not yet shown";
-
     const mMusic = matchField(match, "music_name");
     const mTravel = matchField(match, "travel_interest_name", "travel_name");
     const mPets = matchField(match, "pet_interest_name", "pets_name");
@@ -278,34 +251,27 @@ export default function MatchReportModal({
     const mSmoke = matchField(match, "smoking_name");
     const mDiet = matchField(match, "diet_name");
     const mCoffee = matchField(match, "coffee_name");
-
     const youMusic = profile.musicPref || "";
     const youTravel = profile.travel || "";
     const youPets = profile.pets || "";
     const youReader = profile.reader || "";
     const youGamer = profile.gamer || "";
-
     const youActivity = profile.activityLevel || "";
     const youDrink = profile.drinker || "";
     const youSmoke = profile.smoker || "";
     const youDiet = profile.diet || "";
     const youCoffee = profile.coffeeDrinker || "";
-
     const youPersonality = profile.personality || "";
     const themPersonality = matchField(match, "personality_name");
-
     const youEducation = profile.education || "";
-
     const themReligion = matchField(match, "religion_name");
     const themFamily = matchField(match, "family_oriented_name");
     const themPolitical = matchField(match, "political_name");
     const themDating = matchField(match, "dating_goals_name");
     const themChildren = matchField(match, "children_name");
     const themEducation = matchField(match, "education_name");
-
     const loc = match.location && String(match.location).trim() ? match.location : "their profile area";
     const ageStr = match.age != null && match.age !== "" ? String(match.age) : "—";
-
     const genderPrefLabel = (() => {
         const gp = preferences?.genderPrefs;
         if (Array.isArray(gp) && gp.length > 0) return gp.join(", ");
@@ -317,20 +283,16 @@ export default function MatchReportModal({
     const maxA = preferences.maxAge ?? 100;
     const minH = preferences.minHeight ?? 60;
     const maxH = preferences.maxHeight ?? 80;
-
     const datingYou = pickYouDatingGoal(preferences, profile);
     const childrenYou = pickYouChildren(preferences, profile);
     const religionYou = pickYouReligion(preferences, profile);
     const politicalYou = pickYouPolitical(preferences, profile);
     const familyYou = pickYouFamily(preferences, profile);
-
     const rankNum = matchRank != null ? matchRank : 1;
     const totalNum = matchTotal != null ? matchTotal : 1;
-
     const onBackdrop = (e) => {
         if (e.target === e.currentTarget) onClose();
     };
-
     return (
         <div className="match-report-modal" role="dialog" aria-modal="true" aria-labelledby="match-report-title" onClick={onBackdrop}>
             <div className="match-report-modal__panel" onClick={(e) => e.stopPropagation()}>
@@ -338,7 +300,6 @@ export default function MatchReportModal({
                     <h2 id="match-report-title" className="match-report-modal__title">Why this match?</h2>
                     <button type="button" className="match-report-modal__close" onClick={onClose} aria-label="Close">×</button>
                 </div>
-
                 <div className="match-report-modal__body">
                     <section className="match-report-modal__section">
                         <h3 className="match-report-modal__section-title">1 — Candidate pool</h3>
@@ -347,7 +308,6 @@ export default function MatchReportModal({
                             your preference, their age falls within your preferred range, and their account is active.
                         </p>
                     </section>
-
                     <section className="match-report-modal__section">
                         <h3 className="match-report-modal__section-title">2 — How you were matched</h3>
                         <p className="match-report-modal__muted">
@@ -369,7 +329,6 @@ export default function MatchReportModal({
                             <HardRow line="Trust: Their account is above the automatic removal threshold · in stack" />
                         </div>
                     </section>
-
                     <section className="match-report-modal__section">
                         <h3 className="match-report-modal__section-title">3 — Compatibility score breakdown</h3>
 
@@ -389,7 +348,6 @@ export default function MatchReportModal({
                                 </>
                             )}
                         />
-
                         <DimensionBlock
                             title="Lifestyle"
                             pct={Math.round((w.lifestyle ?? 0.25) * 100)}
@@ -406,7 +364,6 @@ export default function MatchReportModal({
                                 </>
                             )}
                         />
-
                         <DimensionBlock
                             title="Personality"
                             pct={Math.round((w.personality ?? 0.2) * 100)}
@@ -418,7 +375,6 @@ export default function MatchReportModal({
                                 <SubRow label="Personality type" you={youPersonality} them={themPersonality} sym={symPersonalityId(profile.scorePersonalityTypeId, match.score_personality_type_id, youPersonality, themPersonality)} />
                             )}
                         />
-
                         <DimensionBlock
                             title="Values"
                             pct={Math.round((w.values ?? 0.3) * 100)}
@@ -436,7 +392,6 @@ export default function MatchReportModal({
                                 </>
                             )}
                         />
-
                         <p className="match-report-modal__sum-line">
                             {wi} + {wl} + {wp} + {wv} = {rawScore} raw score
                         </p>
@@ -445,7 +400,6 @@ export default function MatchReportModal({
                             to it), while the 0–100 dimension scores come from the matcher before that final rounding.
                         </p>
                     </section>
-
                     <section className="match-report-modal__section">
                         <h3 className="match-report-modal__section-title">4 — Safety screening</h3>
                         <div className="match-report-modal__shield-block">

@@ -20,18 +20,15 @@ const TABLE_SPECS = {
     want_children: ["want_children", "want_children_id", "want_children"],
     political_affil: ["political_affil", "political_affil_id", "political_affil"],
 };
-
 function normalizeUiLabel(label) {
     if (label == null || label === "") return "";
     return String(label).trim().replace(/\u2018|\u2019/g, "'");
 }
-
 const PARTNER_WANT_CHILDREN_UI_TO_DB = {
     "Has kids": "Have kids",
     "Wants kids": "Want kids",
     "No kids": "Don't want kids",
 };
-
 async function lookupFk(pool, tableKey, label, options = {}) {
     const { partnerChildrenPref = false } = options;
     const spec = TABLE_SPECS[tableKey];
@@ -60,7 +57,6 @@ async function lookupFk(pool, tableKey, label, options = {}) {
     }
     return null;
 }
-
 async function resolveProfileUserFieldIds(pool, fields) {
     const {
         gender,
@@ -84,7 +80,6 @@ async function resolveProfileUserFieldIds(pool, fields) {
         children,
         politicalStanding,
     } = fields;
-
     const [
         gender_identity,
         religion_id,
@@ -128,7 +123,6 @@ async function resolveProfileUserFieldIds(pool, fields) {
         lookupFk(pool, "want_children", children),
         lookupFk(pool, "political_affil", politicalStanding),
     ]);
-
     return {
         gender_identity,
         religion_id,
@@ -152,7 +146,6 @@ async function resolveProfileUserFieldIds(pool, fields) {
         political,
     };
 }
-
 async function resolvePreferenceFieldIds(pool, fields) {
     const {
         religionPref,
@@ -163,7 +156,6 @@ async function resolvePreferenceFieldIds(pool, fields) {
         activityPref,
         familyOrientedPref,
     } = fields;
-
     const [
         preferred_religion_type_id,
         preferred_ethnicity_id,
@@ -181,7 +173,6 @@ async function resolvePreferenceFieldIds(pool, fields) {
         lookupFk(pool, "activity_level", activityPref),
         lookupFk(pool, "family_oriented", familyOrientedPref),
     ]);
-
     return {
         preferred_religion_type_id,
         preferred_ethnicity_id,
@@ -192,7 +183,6 @@ async function resolvePreferenceFieldIds(pool, fields) {
         preferred_family_oriented,
     };
 }
-
 module.exports = {
     normalizeUiLabel,
     lookupFk,

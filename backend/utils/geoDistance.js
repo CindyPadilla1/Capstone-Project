@@ -5,7 +5,6 @@ function milesBetween(lat1, lon1, lat2, lon2) {
         || lat2 === null || lat2 === undefined
         || lon2 === null || lon2 === undefined
     ) return null;
-
     const toRad = (deg) => (deg * Math.PI) / 180;
     const R = 3958.7613;
     const dLat = toRad(lat2 - lat1);
@@ -16,5 +15,4 @@ function milesBetween(lat1, lon1, lat2, lon2) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
 }
-
 module.exports = { milesBetween };

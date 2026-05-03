@@ -1,11 +1,8 @@
 const pool = require("../config/db");
-
 exports.uploadMiddleware = (req, res, next) => next();
-
 exports.uploadPhoto = async (req, res) => {
     const user_id = req.user?.id;
     if (!user_id) return res.status(400).json({ error: "Not authenticated." });
-
     const { photo_url } = req.body;
     if (photo_url == null || photo_url === "") {
         return res.status(400).json({ error: "photo_url is required." });
@@ -19,7 +16,6 @@ exports.uploadPhoto = async (req, res) => {
     if (!okData && !okHttp) {
         return res.status(400).json({ error: "Invalid image URL. Use https image URL or a data:image base64 data URL." });
     }
-
     try {
         await pool.query(
             "UPDATE users SET profile_photo_url = $1 WHERE user_id = $2",

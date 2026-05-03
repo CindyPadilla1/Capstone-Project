@@ -1,6 +1,5 @@
 const pool = require("../config/db");
 const { applyTrustAfterCheckin, getTrustDisplayForUser } = require("../services/trustService");
-
 exports.submitCheckin = async (req, res) => {
     const reviewer_user_id = parseInt(req.user.id, 10);
     const {
@@ -13,7 +12,6 @@ exports.submitCheckin = async (req, res) => {
         would_meet_again,
         short_comment,
     } = req.body;
-
     const comfort = Number(comfort_level);
     if (!reviewed_user_id || !schedule_id || !Number.isFinite(comfort) || comfort < 1 || comfort > 5) {
         return res.status(400).json({ error: "reviewed_user_id, schedule_id, and comfort_level (1–5) are required." });
@@ -24,10 +22,8 @@ exports.submitCheckin = async (req, res) => {
     if (!["Yes", "No"].includes(felt_pressured) || !["Yes", "No"].includes(would_meet_again)) {
         return res.status(400).json({ error: "felt_pressured and would_meet_again must be Yes or No." });
     }
-
     const comment =
         typeof short_comment === "string" ? short_comment.trim().slice(0, 500) : null;
-
     try {
         const schedResult = await pool.query(
             `SELECT ds.status, m.user1_id, m.user2_id
@@ -50,14 +46,12 @@ exports.submitCheckin = async (req, res) => {
         if (parseInt(reviewed_user_id, 10) !== expectedOther) {
             return res.status(400).json({ error: "reviewed_user_id must be your date partner for this schedule." });
         }
-
         const signals = {
             comfort_level: comfort,
             felt_safe: felt_safe === "Yes",
             boundaries_respected: boundaries_respected === "Yes",
             felt_pressured: felt_pressured === "Yes",
         };
-
         const client = await pool.connect();
         try {
             await client.query("BEGIN");
@@ -83,7 +77,6 @@ exports.submitCheckin = async (req, res) => {
             const checkinId = insertResult.rows[0].checkin_id;
             const trustResult = await applyTrustAfterCheckin(client, reviewed_user_id, checkinId, signals);
             await client.query("COMMIT");
-
             const display = await getTrustDisplayForUser(reviewed_user_id);
             res.status(201).json({
                 message: "Check-in submitted.",
@@ -104,15 +97,12 @@ exports.submitCheckin = async (req, res) => {
         res.status(500).json({ error: "Failed to submit check-in." });
     }
 };
-
-/** No reviewer identities (reviewer anonymity). */
 exports.getCheckinSummary = async (req, res) => {
     const targetId = parseInt(req.params.user_id, 10);
     const selfId = parseInt(req.user.id, 10);
     if (targetId !== selfId) {
         return res.status(403).json({ error: "You can only view your own check-in summary." });
     }
-
     try {
         const result = await pool.query(
             `SELECT COUNT(*)::int AS total,

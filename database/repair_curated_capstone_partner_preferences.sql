@@ -1,12 +1,4 @@
--- Restores partner preferences for capstone demo accounts to match scripts/seedCapstoneDemoUsers.js.
--- Run after a destructive overwrite (e.g. database/overwrite_test_partner_preferences.sql) that
--- was applied before that script excluded curated emails.
---
---   node scripts/run-sql.js database/repair_curated_capstone_partner_preferences.sql
-
 BEGIN;
-
--- ── Dante ───────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 22,
@@ -24,8 +16,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'Yes' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'dante@test.com';
-
--- ── Beatrice ────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 24,
@@ -43,8 +33,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'Yes' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'beatrice@test.com';
-
--- ── Zendaya ─────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 23,
@@ -62,8 +50,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'No preference' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'zendaya@test.com';
-
--- ── Olivia ──────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 21,
@@ -81,8 +67,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'No' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'olivia@test.com';
-
--- ── Shane ───────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 22,
@@ -100,8 +84,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'Yes' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'shane@test.com';
-
--- ── Priya ────────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 25,
@@ -119,8 +101,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'Yes' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'priya@test.com';
-
--- ── Tyler ───────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 22,
@@ -138,8 +118,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'Yes' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'tyler@test.com';
-
--- ── Sandra ──────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 45,
@@ -157,8 +135,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'No' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'sandra@test.com';
-
--- ── Jasmine ─────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 24,
@@ -176,8 +152,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'Yes' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'jasmine@test.com';
-
--- ── Derek ───────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 22,
@@ -195,8 +169,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'Yes' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'derek@test.com';
-
--- ── Finley ──────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 24,
@@ -214,8 +186,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'Yes' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'finley@test.com';
-
--- ── Avery ───────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 25,
@@ -233,8 +203,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'Yes' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'avery@test.com';
-
--- ── Kendall ─────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 21,
@@ -252,8 +220,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'No' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'kendall@test.com';
-
--- ── Reese ────────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 22,
@@ -271,8 +237,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'No preference' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'reese@test.com';
-
--- ── Morgan ──────────────────────────────────────────────────────────────────
 UPDATE preferences p
 SET
     preferred_age_min = 24,
@@ -290,8 +254,6 @@ SET
     preferred_family_oriented = (SELECT family_oriented_id FROM family_oriented WHERE family_oriented_name = 'Yes' LIMIT 1)
 FROM users u
 WHERE p.user_id = u.user_id AND u.email = 'morgan@test.com';
-
--- ── preference_genders (multi-select) ───────────────────────────────────────
 DELETE FROM preference_genders pg
 USING preferences p
 JOIN users u ON u.user_id = p.user_id

@@ -1,20 +1,16 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { API_BASE_URL } from "../config/api";
-
 const UserContext = createContext();
-
 function formatCityState(city, state) {
     if (city && state) return `${city}, ${state}`;
     return (city || state || "").trim();
 }
-
 function normalizeGenderDisplay(name) {
     if (!name) return "";
     if (name === "Man") return "Male";
     if (name === "Woman") return "Female";
     return name;
 }
-
 function normalizeFamilyUi(name) {
     if (name == null) return "";
     const s = String(name).trim();
@@ -22,7 +18,6 @@ function normalizeFamilyUi(name) {
     if (s === "Yes" || s === "No" || s === "No preference") return s;
     return s;
 }
-
 function normalizeChildrenUi(name) {
     if (name == null) return "";
     const s = String(name).trim();
@@ -31,7 +26,6 @@ function normalizeChildrenUi(name) {
     if (ok.includes(s)) return s;
     return s;
 }
-
 function mapLegacyNoPreferenceLabel(name) {
     if (name == null) return "";
     const s = String(name).trim();
@@ -39,27 +33,23 @@ function mapLegacyNoPreferenceLabel(name) {
     if (s === "No preference") return "Prefer not to say";
     return s;
 }
-
 function stripInternalMatchFields(row) {
     if (!row || typeof row !== "object") return row;
     const o = { ...row };
     delete o.trust_penalized;
     return o;
 }
-
 function sanitizePhotoUrl(v) {
     if (v == null) return null;
     const s = String(v).trim();
     if (!s || s === "null" || s === "undefined") return null;
     return s;
 }
-
 function scoreId(v) {
     if (v == null || v === "") return null;
     const n = Number(v);
     return Number.isFinite(n) ? n : null;
 }
-
 export function mapAuthUserToProfile(u) {
     let education = u.education_career_name || "";
     if (education === "Trade / Vocational") education = "Trade";
@@ -124,7 +114,6 @@ export function mapAuthUserToProfile(u) {
         scoreEducationCareerId: scoreId(u.score_education_career_id),
     };
 }
-
 function defaultPreferences() {
     return {
         genderPref: "",
@@ -143,7 +132,6 @@ function defaultPreferences() {
         datingGoalPref: "",
     };
 }
-
 function normalizePartnerTogglePrefs(p) {
     const next = { ...p };
     const toggles = ["childrenPref", "activityPref", "familyOrientedPref", "datingGoalPref"];
@@ -171,7 +159,6 @@ function normalizePartnerTogglePrefs(p) {
     }
     return next;
 }
-
 function emptyProfile() {
     return {
         profilePic: null,
@@ -204,7 +191,6 @@ function emptyProfile() {
         trustDisplay: null,
     };
 }
-
 export function UserProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(() => {
         try { const s = localStorage.getItem("user"); return s ? JSON.parse(s) : null; }
@@ -223,7 +209,6 @@ export function UserProvider({ children }) {
             prev.find(u => u.user_id === user.user_id) ? prev : [...prev, user]
         );
     };
-
     const [profile, setProfile] = useState(() => emptyProfile());
     const [preferences, setPreferences] = useState(defaultPreferences);
     const [accountProfileLoaded, setAccountProfileLoaded] = useState(false);
@@ -231,10 +216,7 @@ export function UserProvider({ children }) {
     const bumpNotificationEpoch = useCallback(() => {
         setNotificationEpoch((n) => n + 1);
     }, []);
-
-    /** Invalidates in-flight GET /matches responses after logout/login or when a newer fetch starts. */
     const matchesFetchGenRef = useRef(0);
-
     const syncSessionFromAuthUser = useCallback((u) => {
         if (!u) return;
         setProfile(mapAuthUserToProfile(u));
@@ -259,13 +241,11 @@ export function UserProvider({ children }) {
         setCurrentUser(userData);
         setToken(jwtToken);
     };
-
     const logout = () => {
         matchesFetchGenRef.current += 1;
         try {
             sessionStorage.removeItem("aura_appeal_resolution");
         } catch {
-            /* ignore */
         }
         localStorage.removeItem("user");
         localStorage.removeItem("token");
@@ -278,9 +258,7 @@ export function UserProvider({ children }) {
         setPreferences(normalizePartnerTogglePrefs(defaultPreferences()));
         setAccountProfileLoaded(false);
     };
-
     const userId = currentUser?.user_id;
-
     const refreshAuthProfile = useCallback(async () => {
         if (!token) return;
         try {
@@ -292,10 +270,8 @@ export function UserProvider({ children }) {
                 if (meData?.user) syncSessionFromAuthUser(meData.user);
             }
         } catch {
-            /* ignore */
         }
     }, [token, syncSessionFromAuthUser]);
-
     const refreshMatches = useCallback(async (opts) => {
         if (!userId || !token) return;
         const myGen = ++matchesFetchGenRef.current;
@@ -324,7 +300,6 @@ export function UserProvider({ children }) {
             if (!silent) setMatchesLoading(false);
         }
     }, [userId, token]);
-
     useEffect(() => {
         if (!userId || !token) return;
         refreshMatches();

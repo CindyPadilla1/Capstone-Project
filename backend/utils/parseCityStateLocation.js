@@ -35,5 +35,4 @@ function parseCityStateLocation(raw) {
     }
     return { ok: true, error: null, city, state };
 }
-
 module.exports = { parseCityStateLocation };

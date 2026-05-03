@@ -10,11 +10,11 @@ const pool = new Pool({
 pool.query(`
   CREATE TABLE IF NOT EXISTS notifications (
     notification_id serial PRIMARY KEY,
-    user_id         integer NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    type            varchar NOT NULL,
-    payload         jsonb,
-    is_read         boolean NOT NULL DEFAULT false,
-    created_at      timestamptz NOT NULL DEFAULT NOW()
+    user_id integer NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    type varchar NOT NULL,
+    payload  jsonb,
+    is_read boolean NOT NULL DEFAULT false,
+    created_at timestamptz NOT NULL DEFAULT NOW()
   )
 `).then(() => {
   console.log('notifications table created');

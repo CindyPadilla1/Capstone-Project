@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { API_BASE_URL } from "../config/api";
 const READ_ON_VIEW_TYPES = ["date_accepted", "date_declined", "trust_feedback", "match_created", "new_message"];
-
 function parseNotifPayload(n) {
     const raw = n.payload;
     if (raw == null) return {};
@@ -16,7 +15,6 @@ function parseNotifPayload(n) {
     }
     return raw;
 }
-
 function Navbar() {
     const navigate = useNavigate();
     const { currentUser, token, notificationEpoch } = useUser();
@@ -25,7 +23,6 @@ function Navbar() {
     const [notifOpen, setNotifOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unread, setUnread] = useState(0);
-
     const fetchNotifications = useCallback(() => {
         if (!userId || !token) return;
         fetch(`${API_BASE_URL}/dates/notifications/${userId}`, {
@@ -40,7 +37,6 @@ function Navbar() {
             })
             .catch(() => {});
     }, [userId, token]);
-
     const markReadOnViewTypes = useCallback(async () => {
         if (!userId || !token) return;
         try {
@@ -54,17 +50,14 @@ function Navbar() {
             });
         } catch {}
     }, [userId, token]);
-
     const bellRef = useRef(null);
     const panelRef = useRef(null);
-
     useEffect(() => {
         if (!userId || !token) return;
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 60000);
         return () => clearInterval(interval);
     }, [userId, token, fetchNotifications, notificationEpoch]);
-
     useEffect(() => {
         if (!notifOpen) return;
         const onDocMouseDown = (e) => {
@@ -75,7 +68,6 @@ function Navbar() {
         document.addEventListener("mousedown", onDocMouseDown);
         return () => document.removeEventListener("mousedown", onDocMouseDown);
     }, [notifOpen]);
-
     const handleRespond = async (scheduleId, response) => {
         try {
             await fetch(`${API_BASE_URL}/dates/${scheduleId}/respond`, {
@@ -91,64 +83,62 @@ function Navbar() {
             console.error("Respond error:", err);
         }
     };
-
     const formatDate = (iso) => {
         if (!iso) return "";
         return new Date(iso).toLocaleString([], {
             month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
         });
     };
-
     const formatNotif = (n) => {
         const p = parseNotifPayload(n);
         if (n.type === "date_request") {
             return {
-                icon:        "📅",
-                title:       `${p.sender_name || "Someone"} sent a date request`,
-                body:        `${p.venue_name || "Venue"} · ${formatDate(p.proposed_datetime)}`,
+                icon: "📅",
+                title:`${p.sender_name || "Someone"} sent a date request`,
+                body:`${p.venue_name || "Venue"} · ${formatDate(p.proposed_datetime)}`,
                 showActions: true,
                 scheduleId:  p.schedule_id,
             };
         }
         if (n.type === "date_accepted") {
             return {
-                icon:        "✅",
-                title:       `${p.responder_name || "Your match"} accepted your date!`,
-                body:        `${p.venue_name || "Your date"} on ${formatDate(p.proposed_datetime)} is confirmed.`,
+                icon: "✅",
+                title:`${p.responder_name || "Your match"} accepted your date!`,
+                body:  `${p.venue_name || "Your date"} on ${formatDate(p.proposed_datetime)} is confirmed.`,
                 showActions: false,
             };
         }
         if (n.type === "date_declined") {
             return {
-                icon:        "❌",
-                title:       `${p.responder_name || "Your match"} declined your date request.`,
-                body:        p.venue_name ? `Venue: ${p.venue_name}` : "",
+                icon: "❌",
+                title: `${p.responder_name || "Your match"} declined your date request.`,
+                body:p.venue_name ? `Venue: ${p.venue_name}` : "",
                 showActions: false,
             };
         }
         if (n.type === "post_date_survey") {
             return {
-                icon:               "📝",
-                title:              "Post-date safety check-in",
-                body:               `How did your date at ${p.venue_name || "the venue"} go?`,
-                showActions:        false,
+                icon:  "📝",
+                title:"Post-date safety check-in",
+                body: `How did your date at ${p.venue_name || "the venue"} go?`,
+                showActions:false,
                 surveyScheduleId:   p.schedule_id ?? p.scheduleId,
             };
         }
         if (n.type === "trust_feedback") {
             return {
-                icon:             "🛡️",
-                title:            "Your safety trust was updated",
-                body:             "Recent date feedback affected your score. Open Profile to see details, or submit an appeal if you disagree.",
-                showActions:      false,
+                icon:  "🛡️",
+                title:  "Your safety trust was updated",
+                body: "Recent date feedback affected your score. Open Profile to see details, or submit an appeal if you disagree.",
+                showActions:false,
                 showAppealButton: true,
             };
         }
         if (n.type === "match_created") {
             return {
-                icon:        "💘",
-                title:       `${p.matcher_name || "Someone"} matched with you!`,
-                body:        "You both liked each other. Start chatting now.",
+                icon: "💘",
+                title: `${p.matcher_name || "Someone"} matched with you!`,
+                body:"You both liked each other. Start chatting now.",
                 showActions: false,
                 showChatButton: true,
             };
@@ -164,7 +154,6 @@ function Navbar() {
         }
         return { icon: "🔔", title: n.type, body: "", showActions: false };
     };
-
     return (
         <>
             <nav className="navbar navbar-dark navbar-color px-4">
@@ -291,7 +280,6 @@ function Navbar() {
                     })}
                 </div>
             )}
-
             <div className={`sidebar ${menuOpen ? "open" : ""}`}>
                 <button className="close-btn" onClick={() => setMenuOpen(false)}>×</button>
                 <ul className="list-unstyled mt-4">
@@ -305,5 +293,4 @@ function Navbar() {
         </>
     );
 }
-
 export default Navbar;

@@ -1,12 +1,3 @@
-/**
- * Rebuilds capstone demo accounts: removes all @test.com and @aura.demo users (and dependent rows),
- * then inserts a curated roster with password: password123 (bcrypt hash below).
- *
- * Run from project root (loads .env then backend/.env):
- *   node scripts/seedCapstoneDemoUsers.js
- *
- * Requires: seed_data.sql + migrations (lookup tables, height_inches, preferences.user_id unique, preferred_ethnicity_id).
- */
 
 const fs = require("fs");
 const path = require("path");
@@ -15,8 +6,6 @@ const { main: assignTestUserProfilePhotos } = require("./assignTestUserProfilePh
 
 require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 require("dotenv").config({ path: path.join(__dirname, "..", "backend", ".env") });
-
-/** Same hash as database/Aura_migration_v11.sql — plaintext: password123 */
 const PASSWORD_HASH =
     "$2b$10$RIyatva2/Qc33XpWHLrjx.UbEsT4e3Z/E7LdurYh0ECxogjeuW3AS";
 
@@ -24,66 +13,8 @@ const CHI_LAT = 41.878113;
 const CHI_LON = -87.629799;
 const LA_LAT = 34.052235;
 const LA_LON = -118.243683;
-/** ~92 miles from Chicago — should fail max_distance 50 miles for Chicago viewers */
 const MKE_LAT = 43.038902;
 const MKE_LON = -87.906474;
-
-/**
- * @typedef {Object} PrefSpec
- * @property {number} minAge
- * @property {number} maxAge
- * @property {number} minHeight
- * @property {number} maxHeight
- * @property {number} min_distance_miles
- * @property {number} max_distance_miles
- * @property {string|null} religion — partner religion label or null for open
- * @property {string|null} ethnicity — partner ethnicity or null
- * @property {string|null} political
- * @property {string|null} children
- * @property {string|null} dating_goal
- * @property {string|null} activity
- * @property {string|null} family
- * @property {string[]|null} genderPrefs — UI labels: Male, Female, Non-binary (maps to Man/Woman/Non-binary in DB)
- */
-
-/**
- * @typedef {Object} UserSpec
- * @property {string} email
- * @property {string} first_name
- * @property {string} last_name
- * @property {string} dob — YYYY-MM-DD
- * @property {string} gender — Man | Woman | Non-binary (DB gender_type.gender_name)
- * @property {string} bio
- * @property {string} city
- * @property {string} state
- * @property {number} lat
- * @property {number} lon
- * @property {number} height_inches
- * @property {string} religion
- * @property {string} ethnicity
- * @property {string} education
- * @property {string} family_own — Yes | No | No preference
- * @property {string} smoker
- * @property {string} drinker
- * @property {string} coffee
- * @property {string} diet
- * @property {string} activity
- * @property {string} music
- * @property {string} gamer
- * @property {string} reader
- * @property {string} travel
- * @property {string} pets
- * @property {string} personality
- * @property {string} dating_goal
- * @property {string} astrology
- * @property {string} children_own
- * @property {string} political
- * @property {number} trust
- * @property {string} account_status
- * @property {PrefSpec} pref
- */
-
-/** @type {UserSpec[]} */
 const DEMO_USERS = [
     {
         email: "dante@test.com",
@@ -125,7 +56,6 @@ const DEMO_USERS = [
             maxHeight: 76,
             min_distance_miles: 0,
             max_distance_miles: 50,
-            /** Explicit constraints for demo + preference-aware matching (Beatrice/Avery align). */
             religion: "Christian",
             ethnicity: "No preference",
             political: "Moderate",
@@ -924,7 +854,6 @@ async function deleteSeedUsers(client) {
     }
     console.log(`Removing ${ids.length} existing demo users and dependencies...`);
 
-    // Must run before deleting users: checkins can reference doomed users without going through matches/schedules.
     await client.query(
         `DELETE FROM post_date_checkin WHERE reviewer_user_id IN (SELECT user_id FROM _doomed)
             OR reviewed_user_id IN (SELECT user_id FROM _doomed)`
@@ -989,10 +918,8 @@ async function deleteSeedUsers(client) {
     );
     await client.query(`DELETE FROM photo WHERE user_id IN (SELECT user_id FROM _doomed)`);
     await client.query(`DELETE FROM trust_score WHERE user_id IN (SELECT user_id FROM _doomed)`);
-
     await client.query(`DELETE FROM trust_score_history WHERE user_id IN (SELECT user_id FROM _doomed)`).catch(() => {});
     await client.query(`DELETE FROM user_availability WHERE user_id IN (SELECT user_id FROM _doomed)`).catch(() => {});
-
     await client.query(
         `DELETE FROM preference_genders WHERE preference_id IN (
             SELECT preference_id FROM preferences WHERE user_id IN (SELECT user_id FROM _doomed)
@@ -1002,13 +929,11 @@ async function deleteSeedUsers(client) {
     await client.query(`DELETE FROM users WHERE user_id IN (SELECT user_id FROM _doomed)`);
     console.log("Old demo users removed.");
 }
-
 function must(map, label, ctx) {
     const v = map.get(label);
     if (v === undefined) throw new Error(`Missing lookup ${ctx}: "${label}"`);
     return v;
 }
-
 async function seed() {
     const client = new Client({
         host: process.env.DB_HOST,
@@ -1018,9 +943,7 @@ async function seed() {
         password: process.env.DB_PASSWORD,
         ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
     });
-
     await client.connect();
-
     const religion = await loadMap(client, MAPS.religion, MAPS.religion_id, MAPS.religion_name);
     const ethnicity = await loadMap(client, MAPS.ethnicity, MAPS.ethnicity_id, MAPS.ethnicity_name);
     const gender = await loadMap(client, MAPS.gender, MAPS.gender_id, MAPS.gender_name);

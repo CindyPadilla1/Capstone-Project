@@ -1,22 +1,17 @@
 const path = require("path");
 const axios = require("axios");
 const { Client } = require("pg");
-
 require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 require("dotenv").config({ path: path.join(__dirname, "..", "backend", ".env") });
-
 const PEXELS_ENDPOINT = "https://api.pexels.com/v1/search";
 const PEXELS_PER_PAGE = 80;
-
 const searchCache = new Map();
-
 function searchQueryForGender(genderName, userId) {
     const g = String(genderName || "").trim();
     if (g === "Man") return "man portrait";
     if (g === "Woman" || g === "Non-binary" || g === "Nonbinary") return "woman portrait";
     return Number(userId) % 2 === 0 ? "man portrait" : "woman portrait";
 }
-
 function assertPexelsApiKey() {
     const apiKey = String(process.env.PEXELS_API_KEY || "").trim();
     if (!apiKey) {
@@ -24,13 +19,11 @@ function assertPexelsApiKey() {
     }
     return apiKey;
 }
-
 async function fetchPexelsPage(apiKey, query, page) {
     const key = `${query}::${page}`;
     if (searchCache.has(key)) {
         return searchCache.get(key);
     }
-
     const { data } = await axios.get(PEXELS_ENDPOINT, {
         params: { query, page, per_page: PEXELS_PER_PAGE },
         headers: { Authorization: apiKey },
@@ -39,7 +32,6 @@ async function fetchPexelsPage(apiKey, query, page) {
     searchCache.set(key, data);
     return data;
 }
-
 async function portraitUrlFor(apiKey, genderName, userId) {
     const query = searchQueryForGender(genderName, userId);
     const firstPage = await fetchPexelsPage(apiKey, query, 1);
@@ -47,7 +39,6 @@ async function portraitUrlFor(apiKey, genderName, userId) {
     if (!totalResults) {
         throw new Error(`No Pexels photos found for query "${query}".`);
     }
-
     const deterministicIndex = Number(userId) % totalResults;
     const targetPage = Math.floor(deterministicIndex / PEXELS_PER_PAGE) + 1;
     const indexInPage = deterministicIndex % PEXELS_PER_PAGE;
@@ -60,7 +51,6 @@ async function portraitUrlFor(apiKey, genderName, userId) {
     }
     return String(largeUrl).trim();
 }
-
 async function main() {
     const pexelsApiKey = assertPexelsApiKey();
     const client = new Client({
@@ -120,9 +110,7 @@ async function main() {
     }
     console.log(`Profile photos assigned: ${ok} ok, ${failed} failed.`);
 }
-
 module.exports = { main };
-
 if (require.main === module) {
     main().catch((e) => {
         console.error(e);

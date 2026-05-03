@@ -1,11 +1,9 @@
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
-
 const filterMatches = require("../matching/filterMatches");
 const rankMatches = require("../matching/rankMatches");
 const scoreMatch = require("../matching/scoreMatch");
 const { normalizePreferredGenderIds } = require("../matching/preferredGenderIds");
-
 function basePrefs(overrides = {}) {
     return {
         preferred_age_min: 18,
@@ -30,14 +28,12 @@ function basePrefs(overrides = {}) {
         ...overrides,
     };
 }
-
 describe("normalizePreferredGenderIds", () => {
     test("treats scalar int/bigint as single-id list (pg edge cases)", () => {
         assert.deepEqual(normalizePreferredGenderIds(3), [3]);
         assert.deepEqual(normalizePreferredGenderIds(3n), [3]);
     });
 });
-
 describe("filterMatches", () => {
     test("removes candidates at or below trust elimination threshold", () => {
         const user = {
@@ -62,7 +58,6 @@ describe("filterMatches", () => {
         const out = filterMatches(user, [bad]);
         assert.equal(out.length, 0);
     });
-
     test("enforces mutual gender when both sides list preferences", () => {
         const user = {
             user_id: 1,
@@ -86,7 +81,6 @@ describe("filterMatches", () => {
         const out = filterMatches(user, [womanOnlyWantsWomen]);
         assert.equal(out.length, 0);
     });
-
     test("partner gender preference stored as Open to all (gender_type_id 6) matches same candidates as explicit multi-id list", () => {
         const man = {
             user_id: 10,
@@ -128,7 +122,6 @@ describe("filterMatches", () => {
         assert.equal(outExplicit.length, 1);
         assert.equal(outOpen[0].user_id, outExplicit[0].user_id);
     });
-
     test("partner religion open (label) matches any candidate religion", () => {
         const user = {
             user_id: 1,
@@ -165,7 +158,6 @@ describe("filterMatches", () => {
         const out = filterMatches(user, [christianNb]);
         assert.equal(out.length, 1);
     });
-
     test("Open to all identity: mutual uses partner-pref overlap with seek, or explicit OTA id", () => {
         const openToAllViewer = {
             user_id: 1,
@@ -201,7 +193,6 @@ describe("filterMatches", () => {
         assert.equal(filterMatches(openToAllViewer, [womanSeeksManOnly]).length, 1);
         assert.equal(filterMatches(openToAllViewer, [womanSeeksOnlyNb]).length, 0);
     });
-
     test("partner family-oriented is not a hard deck filter (mutual gender + trust still apply)", () => {
         const user = {
             user_id: 1,
@@ -242,7 +233,6 @@ describe("filterMatches", () => {
         assert.equal(out.length, 2);
     });
 });
-
 describe("rankMatches", () => {
     test("applies penalty when candidate trust is at or below penalty threshold", () => {
         const user = {
@@ -293,7 +283,6 @@ describe("rankMatches", () => {
         assert.equal(ranked[0].score, Math.max(0, raw - 15));
     });
 });
-
 describe("scoreMatch", () => {
     test("returns totalScore and breakdown in 0-100 range", () => {
         const a = {
@@ -320,7 +309,6 @@ describe("scoreMatch", () => {
         assert.ok(r.totalScore >= 0 && r.totalScore <= 100);
         assert.ok(r.breakdown.interests >= 0 && r.breakdown.interests <= 100);
     });
-
     test("breakdown includes human-readable reasons for identical profiles", () => {
         const a = {
             music: 1,

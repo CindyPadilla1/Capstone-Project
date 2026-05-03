@@ -1,23 +1,3 @@
-// riskClassifier.js
-// Deterministic, rule-based message risk classification.
-// No machine learning — fully auditable and explainable.
-//
-// Returns: { category, riskLevel }
-//   category:  internal codes (normal | flirty | intimate | explicit | pressure | coercive | refusal)
-//   riskLevel: 0 = safe | 1 = warn sender | 2 = block immediately
-//
-// Categories map to required conversation states:
-//   normal    → STATE 0 (always allowed)
-//   flirty    → STATE 1 (requires mutual initiation)
-//   intimate  → STATE 3 (requires consent proxy ≥ 0.6, no resistance)
-//   explicit  → always blocked (never delivered) — severe inappropriate request (school-safe demo patterns)
-//   pressure  → riskLevel 1 (warn)
-//   coercive  → always blocked — threats / strong pressure
-//   refusal   → riskLevel 0 but triggers resistance tracking
-
-// ─── Pattern definitions (classroom-appropriate wording; no graphic terms) ───
-
-// Blocked immediately (risk 2): severe inappropriate or unsafe requests
 const EXPLICIT_PATTERNS = [
     /\bi hate you\b/i,
     /\b(you are ugly|ur ugly|u r ugly)\b/i,
@@ -29,7 +9,6 @@ const EXPLICIT_PATTERNS = [
     /\bi wish you were never here\b/i,
     /\beveryone hates you\b/i,
 ];
-
 const COERCIVE_PATTERNS = [
     /\bif you don'?t .* i will tell everyone\b/i,
     /\bif you don'?t reply i will spread rumors\b/i,
@@ -40,8 +19,6 @@ const COERCIVE_PATTERNS = [
     /\bstop being so difficult\b/i,
     /\bdo it or i('?m| am) telling (teacher|everyone)\b/i,
 ];
-
-// WARN — pressure signals (riskLevel 1)
 const PRESSURE_PATTERNS = [
     /\bwhy won'?t you answer me\b/i,
     /\bstop ignoring me\b/i,
@@ -53,8 +30,6 @@ const PRESSURE_PATTERNS = [
     /\bcome on just reply\b/i,
     /\bread this please\b/i,
 ];
-
-// TRACK resistance — not a block, but increments resistanceCount
 const REFUSAL_PATTERNS = [
     /\b(no thanks|not interested)\b/i,
     /\bplease stop\b/i,
@@ -68,8 +43,6 @@ const REFUSAL_PATTERNS = [
     /\bstop it\b/i,
     /\bi don'?t want to talk\b/i,
 ];
-
-// INTIMATE — requires STATE 3
 const INTIMATE_PATTERNS = [
     /\b(i (love|miss|need|want) you)\b/i,
     /\b(can'?t stop thinking about you)\b/i,
@@ -87,8 +60,6 @@ const INTIMATE_PATTERNS = [
     /\blet'?s go on a date\b/i,
     /\b(i('?ve| have) feelings for you)\b/i,
 ];
-
-// FLIRTY — requires STATE 1
 const FLIRTY_PATTERNS = [
     /\b((you('?re| are) so cute|ur so cute))\b/i,
     /\b(you('?re| are) (beautiful|handsome|gorgeous))\b/i,
@@ -97,8 +68,6 @@ const FLIRTY_PATTERNS = [
     /\b(i have a crush on you)\b/i,
     /\byou('?re| are) sweet\b/i,
 ];
-
-// ─── Classifier ────────────────────────────────────────────────────────────
 function matchesFlexibleExplicit(raw, normalized) {
     const texts = [raw, normalized].filter((x) => typeof x === "string" && x.length > 0);
     for (const s of texts) {
@@ -159,17 +128,14 @@ function normalizeForClassification(text) {
         .replace(/\s+/g, " ")
         .trim();
 }
-
 function classifyMessage(text) {
     if (!text || typeof text !== 'string') {
         return { category: 'normal', riskLevel: 0 };
     }
-
     const raw = text.trim();
     const normalized = normalizeForClassification(raw);
     const matchesEither = (pattern) => pattern.test(raw) || pattern.test(normalized);
 
-    // Check in order of severity — most severe first
     for (const p of COERCIVE_PATTERNS) {
         if (matchesEither(p)) return { category: 'coercive', riskLevel: 2 };
     }
@@ -191,24 +157,18 @@ function classifyMessage(text) {
     for (const p of FLIRTY_PATTERNS) {
         if (matchesEither(p)) return { category: 'flirty', riskLevel: 0 };
     }
-
     return { category: 'normal', riskLevel: 0 };
 }
-
-// ─── Map category to minimum required conversation state ──────────────────
 const STATE = { INTRODUCTORY: 0, FLIRTING: 1, PERSONAL: 2, INTIMATE: 3 };
-
 function requiredStateForCategory(category) {
     switch (category) {
-        case 'flirty':   return STATE.FLIRTING;
+        case 'flirty': return STATE.FLIRTING;
         case 'intimate': return STATE.INTIMATE;
-        case 'explicit': return STATE.INTIMATE + 1; // always too high — blocks regardless
-        case 'coercive': return STATE.INTIMATE + 1; // always too high — blocks regardless
-        default:         return STATE.INTRODUCTORY;  // normal, pressure, refusal
+        case 'explicit': return STATE.INTIMATE + 1;
+        case 'coercive': return STATE.INTIMATE + 1;
+        default:return STATE.INTRODUCTORY;
     }
 }
-
-// Heuristic: likely a request or repeated question (spec §6 repeat requests / questions)
 const REQUEST_QUESTION_HINTS = [
     /\?/,
     /\b(will you|can you|could you|would you|do you mind)\b/i,
@@ -216,7 +176,6 @@ const REQUEST_QUESTION_HINTS = [
     /\b(please (answer|reply|respond)|did you get)\b/i,
     /\b(what do you think|let me know)\b/i,
 ];
-
 function looksLikeRequestOrQuestion(text) {
     if (!text || typeof text !== "string") return false;
     const raw = text.trim();
@@ -224,8 +183,6 @@ function looksLikeRequestOrQuestion(text) {
     const normalized = normalizeForClassification(raw);
     return REQUEST_QUESTION_HINTS.some((p) => p.test(raw) || p.test(normalized));
 }
-
-/** Short normalized stem to detect the same ask again without a reply from the peer */
 function normalizeRequestStem(text) {
     if (!text || typeof text !== "string") return "";
     return normalizeForClassification(text)
@@ -234,7 +191,6 @@ function normalizeRequestStem(text) {
         .trim()
         .slice(0, 96);
 }
-
 module.exports = {
     classifyMessage,
     requiredStateForCategory,

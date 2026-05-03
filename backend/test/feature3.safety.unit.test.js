@@ -1,15 +1,12 @@
 process.env.FEATURE3_TEST_MODE = "1";
-
 const { test, describe, beforeEach } = require("node:test");
 const assert = require("node:assert/strict");
-
 const {
     classifyMessage,
     looksLikeRequestOrQuestion,
     normalizeRequestStem,
     normalizeForClassification,
 } = require("../conversation/riskClassifier");
-
 const { evaluateMessage, feature3Test } = require("../conversation/safetyEngine");
 const {
     getEscalationLevel,
@@ -17,7 +14,6 @@ const {
     updateConsentScore,
     expireCooldownIfNeeded,
 } = feature3Test;
-
 const {
     STATE,
     buildDefaultConversation,
@@ -27,14 +23,11 @@ const {
     isOnCooldown,
     clearCooldown,
 } = require("../conversation/conversationState");
-
 const { invalidateLoadCacheForTests } = require("../conversation/safetyPersistence");
-
 function resetMatch(matchId) {
     invalidateLoadCacheForTests(matchId);
     replaceConversation(matchId, buildDefaultConversation(matchId));
 }
-
 function parseWaitSecondsFromReason(reason) {
     if (typeof reason !== "string") return null;
     const mMin = reason.match(/(\d+)\s+minutes?\s+and\s+(\d+)\s+seconds?/i);
@@ -43,11 +36,9 @@ function parseWaitSecondsFromReason(reason) {
     if (mSec) return parseInt(mSec[1], 10);
     return null;
 }
-
 beforeEach(() => {
     invalidateLoadCacheForTests(null);
 });
-
 describe("feature3 classifyMessage explicit and grammar variants", () => {
     test("your fat → explicit", () => {
         assert.equal(classifyMessage("your fat").category, "explicit");
@@ -92,7 +83,6 @@ describe("feature3 classifyMessage explicit and grammar variants", () => {
         assert.equal(classifyMessage("you are so cute").category, "flirty");
     });
 });
-
 describe("feature3 classifyMessage must NOT false-positive", () => {
     test("your fat cat is cute → normal", () => {
         assert.equal(classifyMessage("your fat cat is cute").category, "normal");
@@ -104,7 +94,6 @@ describe("feature3 classifyMessage must NOT false-positive", () => {
         assert.equal(classifyMessage("nice to meet you").category, "normal");
     });
 });
-
 describe("feature3 normalizeForClassification", () => {
     test("abbreviation expansion (ur, u, pls)", () => {
         const n = normalizeForClassification("ur pls msg me");
@@ -132,7 +121,6 @@ describe("feature3 normalizeForClassification", () => {
         assert.equal(normalizeForClassification(s), s);
     });
 });
-
 describe("feature3 looksLikeRequestOrQuestion", () => {
     test("question mark", () => {
         assert.equal(looksLikeRequestOrQuestion("how are you?"), true);
@@ -144,7 +132,6 @@ describe("feature3 looksLikeRequestOrQuestion", () => {
         assert.equal(looksLikeRequestOrQuestion("ok"), false);
     });
 });
-
 describe("feature3 normalizeRequestStem", () => {
     test("strips punctuation and caps length", () => {
         const s = normalizeRequestStem("  Hello!!!  What do you think?  ");
@@ -152,7 +139,6 @@ describe("feature3 normalizeRequestStem", () => {
         assert.ok(s.length <= 96);
     });
 });
-
 describe("feature3 getEscalationLevel", () => {
     test("normal", () => {
         assert.equal(
@@ -205,7 +191,6 @@ describe("feature3 getEscalationLevel", () => {
         );
     });
 });
-
 describe("feature3 canTransitionTo", () => {
     const base = () => ({
         state: STATE.INTRODUCTORY,
@@ -216,7 +201,6 @@ describe("feature3 canTransitionTo", () => {
         resistanceCount: 0,
         totalMessages: 0,
     });
-
     test("same state allows (flirty allowed when already at level)", () => {
         const conv = { ...base(), state: STATE.FLIRTING };
         assert.equal(canTransitionTo(STATE.FLIRTING, conv, 10), true);
@@ -292,7 +276,6 @@ describe("feature3 canTransitionTo", () => {
         assert.equal(canTransitionTo(STATE.INTIMATE, conv, 10), false);
     });
 });
-
 describe("feature3 updateConsentScore", () => {
     test("increases with alternation and quick reply", () => {
         const conv = {
@@ -321,7 +304,6 @@ describe("feature3 updateConsentScore", () => {
         assert.ok(next < conv.consentScore);
     });
 });
-
 describe("feature3 applyCooldown idempotency", () => {
     test("second call while active does not reset timer", () => {
         resetMatch(9001);
@@ -332,7 +314,6 @@ describe("feature3 applyCooldown idempotency", () => {
         assert.equal(t1, t2);
     });
 });
-
 describe("feature3 isOnCooldown lifecycle", () => {
     test("before cooldown → false", () => {
         resetMatch(9002);
@@ -354,7 +335,6 @@ describe("feature3 isOnCooldown lifecycle", () => {
         assert.equal(isOnCooldown(9004, 8), false);
     });
 });
-
 describe("feature3 expireCooldownIfNeeded", () => {
     test("resets counters when cooldown expired", async () => {
         resetMatch(9005);
@@ -379,7 +359,6 @@ describe("feature3 expireCooldownIfNeeded", () => {
         assert.equal(c.boundarySetByUserId, null);
     });
 });
-
 describe("feature3 evaluateMessage integration", () => {
     test("normal message delivers at S0", async () => {
         resetMatch(10001);
@@ -387,13 +366,11 @@ describe("feature3 evaluateMessage integration", () => {
         assert.equal(r.decision, "deliver");
         assert.equal(r.category, "normal");
     });
-
     test("meet-up blocked at S0 before requirements met", async () => {
         resetMatch(10002);
         const r = await evaluateMessage(10002, 1, 2, "want to meet up tomorrow");
         assert.equal(r.decision, "block");
     });
-
     test("hang-out blocked at S1 before intimate requirements", async () => {
         resetMatch(10003);
         await evaluateMessage(10003, 1, 2, "hi");
@@ -401,13 +378,11 @@ describe("feature3 evaluateMessage integration", () => {
         const r = await evaluateMessage(10003, 1, 2, "wanna hang out");
         assert.equal(r.decision, "block");
     });
-
     test("flirty blocked when only one user has initiated", async () => {
         resetMatch(10004);
         const r = await evaluateMessage(10004, 1, 2, "you are so cute");
         assert.equal(r.decision, "block");
     });
-
     test("flirty delivers when both users have initiated", async () => {
         resetMatch(10005);
         await evaluateMessage(10005, 1, 2, "hi");
@@ -415,7 +390,6 @@ describe("feature3 evaluateMessage integration", () => {
         assert.equal(r.decision, "deliver");
         assert.equal(r.category, "flirty");
     });
-
     test("explicit blocked with cooldown on first violation", async () => {
         resetMatch(10006);
         const r = await evaluateMessage(10006, 1, 2, "ur fat");
@@ -424,7 +398,6 @@ describe("feature3 evaluateMessage integration", () => {
         assert.equal(r.cooldownApplied, true);
         assert.ok(r.cooldownUntil);
     });
-
     test("harmful variants blocked", async () => {
         const variants = ["your fat", "u r fat", "youareugly", "i h8 u"];
         for (let i = 0; i < variants.length; i++) {
@@ -434,13 +407,11 @@ describe("feature3 evaluateMessage integration", () => {
             assert.equal(r.category, "explicit", variants[i]);
         }
     });
-
     test("safe similar phrase delivers", async () => {
         resetMatch(10007);
         const r = await evaluateMessage(10007, 1, 2, "your fat cat is cute");
         assert.equal(r.decision, "deliver");
     });
-
     test("cooldown block remaining time lower on second attempt", async () => {
         resetMatch(10008);
         await evaluateMessage(10008, 1, 2, "you are fat");
@@ -455,7 +426,6 @@ describe("feature3 evaluateMessage integration", () => {
         assert.ok(s1 != null && s2 != null);
         assert.ok(s2 <= s1, `expected countdown ${s2} <= ${s1}`);
     });
-
     test("applyCooldown idempotency keeps stable timer across block reasons", async () => {
         resetMatch(10009);
         applyCooldown(10009, 1, 2);
@@ -466,7 +436,6 @@ describe("feature3 evaluateMessage integration", () => {
         assert.equal(r.decision, "block");
         assert.equal(r.cooldownUntil, until);
     });
-
     test("recipient message count unchanged when sender hits cooldown block", async () => {
         resetMatch(10010);
         await evaluateMessage(10010, 1, 2, "hey");
@@ -475,7 +444,6 @@ describe("feature3 evaluateMessage integration", () => {
         await evaluateMessage(10010, 1, 2, "blocked attempt");
         assert.equal(getConversation(10010).messageCounts[2] || 0, beforePeer);
     });
-
     test("after cooldown expiry normal message delivers and counters reset", async () => {
         resetMatch(10011);
         await evaluateMessage(10011, 1, 2, "you are fat");
@@ -488,7 +456,6 @@ describe("feature3 evaluateMessage integration", () => {
         const c2 = getConversation(10011);
         assert.equal(c2.resistanceCount, 0);
     });
-
     test("warning escalation at unanswered threshold", async () => {
         resetMatch(10012);
         await evaluateMessage(10012, 1, 2, "a");
@@ -498,7 +465,6 @@ describe("feature3 evaluateMessage integration", () => {
         assert.equal(r.decision, "prompt");
         assert.equal(r.escalation, "warning");
     });
-
     test("restrict escalation and victim benign follow-up delivers", async () => {
         resetMatch(10013);
         await evaluateMessage(10013, 2, 1, "hello");
@@ -508,7 +474,6 @@ describe("feature3 evaluateMessage integration", () => {
         const rVictim = await evaluateMessage(10013, 1, 2, "ok thanks");
         assert.equal(rVictim.decision, "deliver");
     });
-
     test("state advances S0→S1→S2→S3 with enough exchanges", async () => {
         resetMatch(10014);
         const uid1 = 11;
@@ -536,13 +501,11 @@ describe("feature3 evaluateMessage integration", () => {
         assert.equal(r.decision, "deliver");
         assert.equal(getConversation(10014).state, STATE.INTIMATE);
     });
-
     test("invalid S0→S3 intimate blocked", async () => {
         resetMatch(10015);
         const r = await evaluateMessage(10015, 1, 2, "i love you");
         assert.equal(r.decision, "block");
     });
-
     test("invalid S1→S3 skip blocked", async () => {
         resetMatch(10016);
         await evaluateMessage(10016, 1, 2, "a");
@@ -551,7 +514,6 @@ describe("feature3 evaluateMessage integration", () => {
         assert.equal(r.decision, "block");
     });
 });
-
 describe("feature3 edge cases", () => {
     test("empty string classify → normal", () => {
         assert.equal(classifyMessage("").category, "normal");

@@ -1,8 +1,6 @@
 const { Client } = require("pg");
-
 require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
 require("dotenv").config({ path: require("path").join(__dirname, "..", "backend", ".env") });
-
 async function countDatesReviewed(client, reviewedUserId) {
     const { rows } = await client.query(
         `SELECT COUNT(DISTINCT schedule_id)::int AS c FROM post_date_checkin
@@ -11,7 +9,6 @@ async function countDatesReviewed(client, reviewedUserId) {
     );
     return rows[0]?.c ?? 0;
 }
-
 async function getOrCreateMatchId(client, a, b) {
     const u1 = Math.min(a, b);
     const u2 = Math.max(a, b);
@@ -24,7 +21,6 @@ async function getOrCreateMatchId(client, a, b) {
     );
     return ins.rows[0].match_id;
 }
-
 async function ensureTestUserTrustDatesReviewed(client) {
     const { rows: testUsers } = await client.query(
         `SELECT u.user_id
@@ -35,7 +31,6 @@ async function ensureTestUserTrustDatesReviewed(client) {
     );
     const ids = testUsers.map((r) => r.user_id);
     if (ids.length === 0) return;
-
     for (const row of testUsers) {
         const uid = row.user_id;
         const reviewer = ids.find((id) => id !== uid);
@@ -66,7 +61,6 @@ async function ensureTestUserTrustDatesReviewed(client) {
         }
     }
 }
-
 async function main() {
     const client = new Client({
         host: process.env.DB_HOST,
@@ -88,12 +82,10 @@ async function main() {
         await client.end();
     }
 }
-
 if (require.main === module) {
     main().catch((err) => {
         console.error(err);
         process.exit(1);
     });
 }
-
 module.exports = { ensureTestUserTrustDatesReviewed };

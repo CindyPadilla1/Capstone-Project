@@ -10,7 +10,6 @@
     "test:integration": "node --test backend/test/integration/feature1.integration.test.js backend/test/integration/feature1.regression.test.js backend/test/integration/feature1.comprehensive.integration.test.js",
     "test:integration:live": "FEATURE1_INTEGRATION=1 node --test backend/test/integration/feature1.integration.test.js backend/test/integration/feature1.comprehensive.integration.test.js",
     "test:regression": "FEATURE1_REGRESSION=1 node --test backend/test/integration/feature1.regression.test.js backend/test/integration/feature1.comprehensive.integration.test.js",
-    "test:smoke": "node scripts/smoke-matches.mjs",
     "db:ensure-test-users": "node scripts/run-sql.js database/ensure_test_users_complete.sql",
     "db:repair:curated-prefs": "node scripts/run-sql.js database/repair_curated_capstone_partner_preferences.sql",
     "db:seed:demo": "node scripts/seedCapstoneDemoUsers.js",

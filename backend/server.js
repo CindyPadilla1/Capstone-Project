@@ -3,20 +3,20 @@ require("./config/db");
 
 const express = require("express");
 const http    = require("http");
-const cors    = require("cors");
+const cors = require("cors");
 
-const app    = express();
+const app= express();
 const server = http.createServer(app);
-const PORT   = process.env.PORT || 4000;
+const PORT= process.env.PORT || 4000;
 
 const initSocketServer = require("./realtime/socketServer");
 initSocketServer(server);
 
 app.use(
     cors({
-        origin:      true,
+        origin: true,
         credentials: true,
-        methods:     ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        methods:["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"]
     })
 );
@@ -27,22 +27,22 @@ app.use((req, res, next) => {
     next();
 });
 
-const matchRoutes   = require("./routes/match");
-const authRoutes    = require("./routes/auth");
-const profileRoutes = require("./routes/profile");
-const messageRoutes = require("./routes/messages");
-const dateRoutes    = require("./routes/dates");
-const checkinRoutes    = require("./routes/checkin");
-const appealRoutes     = require("./routes/appeals");
+const matchRoutes= require("./routes/match");
+const authRoutes= require("./routes/auth");
+const profileRoutes= require("./routes/profile");
+const messageRoutes= require("./routes/messages");
+const dateRoutes= require("./routes/dates");
+const checkinRoutes= require("./routes/checkin");
+const appealRoutes= require("./routes/appeals");
 const { runSurveyTriggers } = require("./controllers/dateController");
 
-app.use("/matches",  matchRoutes);
-app.use("/auth",     authRoutes);
-app.use("/profile",  profileRoutes);
-app.use("/messages", messageRoutes);
-app.use("/dates",    dateRoutes);
-app.use("/checkin", checkinRoutes);
-app.use("/appeals", appealRoutes);
+app.use("/matches",matchRoutes);
+app.use("/auth",authRoutes);
+app.use("/profile",profileRoutes);
+app.use("/messages",messageRoutes);
+app.use("/dates",dateRoutes);
+app.use("/checkin",checkinRoutes);
+app.use("/appeals",appealRoutes);
 
 setInterval(() => {
     runSurveyTriggers().catch((err) => console.error("survey trigger cron:", err.message));
@@ -53,7 +53,7 @@ app.get("/health", (req, res) => {
 });
 
 server.listen(PORT, () => {
-    console.log(`✅ Aura backend running on port ${PORT}`);
-    console.log(`✅ Socket.io initialized on the same port`);
+    console.log(`Aura backend running on port ${PORT}`);
+    console.log(`Socket.io initialized on the same port`);
     runSurveyTriggers().catch((err) => console.error("initial survey trigger run:", err.message));
 });
